@@ -1,0 +1,128 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
+/* ---------- Bulk & Dash Home CSS ------------- */
+.OuterBox {
+  height: 500px;
+  width: auto;
+  border: 2px solid;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.InnerBox {
+  width: 50%;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.OuterBox h3 {
+  font-size: 18px;
+}
+
+.ButtonBox {
+  display: flex;
+  justify-content: space-evenly;
+  width: 100%;
+  margin-top: 30px;
+}
+
+/* Home and Dash Pages */
+.HomePage,
+.DashPage,
+.ExistListPage,
+.NewListPage {
+  display: flex;
+  flex-direction: column;
+  width: 40%;
+  border-radius: 20px;
+  transition: transform 0.3s ease;
+}
+
+.HomePage:hover,
+.DashPage:hover,
+.ExistListPage:hover,
+.NewListPage:hover {
+  background-color: #a3a3a321;
+  border: 3px solid #a3a3a3;
+  transform: scale(1.05);
+}
+
+.HomePage img,
+.DashPage img
+{
+  height: 150px;
+  width: 150px;
+}
+
+.ExistListPage img,
+.NewListPage img {
+  height: 200px;
+  width: 200px;
+}
+
+.HomePage button,
+.ExistListPage button {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  background-color: #FFC107; /* Orange for Home/Existing List */
+  color: white; /* Text color */
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.DashPage button,
+.NewListPage button {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  background-color: #FFA500; /* Blue for Dash/New List */
+  color: white; /* Text color */
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.HomePage a,
+.DashPage a,
+.ExistListPage a,
+.NewListPage a {
+  text-decoration: none !important;
+  color: black !important;
+  font-weight: 500;
+}
+
+/* Title, Image, and Button Alignments */
+.bulkTitle,
+.dashTitle,
+.ExistListTitle,
+.NewListTitle {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0px 0px 0px 0px;
+}
+
+.bulkImage,
+.dashImage,
+.ExistListImg,
+.NewListImg {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 20px 0px 10px 0px;
+}
+
+.bulkBtn,
+.dashBtn,
+.ExistListBtn,
+.NewListBtn {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
