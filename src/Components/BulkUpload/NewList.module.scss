@@ -1,0 +1,62 @@
+  .mainBox {
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  .tableContainer {
+    margin-top: 20px;
+  }
+  
+  .verticalTableWrapper {
+    margin-bottom: 20px;
+  }
+  
+  .verticalTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+  }
+  
+  .verticalTable th,
+  .verticalTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .verticalTable th {
+    background-color: #f2f2f2;
+  }
+  
+  .tableHeader {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Ensures consistent column widths */
+  }
+  
+  .tableHeader th {
+    border: 1px solid #ddd;
+    padding: 8px;
+    background-color: #f2f2f2;
+    text-align: left;
+  }
+  
+  .tableBodyWrapper {
+    overflow-y: auto;
+    overflow-x: auto; /* Allows horizontal scrolling for large tables */
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Ensures consistent column widths */
+  }
+  
+  .table th,
+  .table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    word-wrap: break-word; /* Ensures text wraps within the cell */
+    white-space: nowrap; /* Prevents text wrapping for cleaner alignment */
+  }
