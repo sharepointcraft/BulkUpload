@@ -15,13 +15,13 @@ const SelectList: React.FC = () => {
           </div> */}
           <div className={`${styles.ExistListImg}`}>
             <img
-              src={require("../../../src/webparts/bulkUpload/assets/ExistingList.png")}
-              alt="Existing List Image"
+              src={require("../../../src/webparts/bulkUpload/assets/NewList.png")}
+              alt="New List Image"
             />
           </div>
           <div className={`${styles.ExistListBtn}`}>
             <button>
-              <Link to="/newlist">Existing List</Link>
+              <Link to="/newlist">Create New List</Link>
             </button>
           </div>
         </div>
@@ -32,13 +32,13 @@ const SelectList: React.FC = () => {
         </div> */}
           <div className={`${styles.NewListImg}`}>
             <img
-              src={require("../../../src/webparts/bulkUpload/assets/NewList.png")}
-              alt="New List Image"
+              src={require("../../../src/webparts/bulkUpload/assets/ExistingList.png")}
+              alt="Existing List Image"
             />
           </div>
           <div className={`${styles.NewListBtn}`}>
             <button>
-              <Link to="/existlist">Create New List</Link>
+              <Link to="/existlist">Existing List</Link>
             </button>
           </div>
         </div>
