@@ -12,7 +12,9 @@ export interface IBulkUploadWebPartProps {
 export default class BulkUploadWebPart extends BaseClientSideWebPart<IBulkUploadWebPartProps> {
   public render(): void {
     const element: React.ReactElement<IBulkUploadProps> =
-      React.createElement(BulkUpload,{});
+      React.createElement(BulkUpload,{
+        context: this.context, // Pass the contexts
+      });
 
     ReactDom.render(element, this.domElement);
   }
