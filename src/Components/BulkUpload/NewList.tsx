@@ -14,7 +14,9 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
   const [uniqueId, setUniqueId] = React.useState<string | null>(null);
   const [listName, setListName] = React.useState<string>("");
 
-  const siteUrl = context.pageContext.web.absoluteUrl || "https://realitycraftprivatelimited.sharepoint.com/sites/DevJay";
+  const siteUrl =
+    context.pageContext.web.absoluteUrl ||
+    "https://realitycraftprivatelimited.sharepoint.com/sites/DevJay";
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -25,7 +27,10 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
         if (typeof data === "string" || data instanceof ArrayBuffer) {
           const workbook = XLSX.read(data, { type: "binary" });
           const sheetName = workbook.SheetNames[0];
-          const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 }) as string[][];
+          const sheetData = XLSX.utils.sheet_to_json(
+            workbook.Sheets[sheetName],
+            { header: 1 }
+          ) as string[][];
 
           const [headers, ...rows] = sheetData;
           setTableHeaders(headers as string[]); // Set headers
@@ -56,10 +61,10 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     return data.d.GetContextWebInformation.FormDigestValue;
   };
   // new createhsharepoint list with the number validation of the data
-  const createSharePointList = async () => {
+  const createSharePointList = async (): Promise<boolean> => {
     if (!listName || !uniqueId) {
       alert("Please provide a list name and select a unique ID.");
-      return;
+      return false; // Return false to indicate failure
     }
   
     // Validate data for Number column types
@@ -78,7 +83,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
           .map((cell) => `Row ${cell.row}, Column ${cell.col}`)
           .join("\n")}`
       );
-      return; // Stop submission if invalid cells exist
+      return false; // Return false if data is invalid
     }
   
     try {
@@ -118,7 +123,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
             FieldTypeKind: columnTypes[i] === "Number" ? 9 : 2, // Adjust field types
           }),
         });
- 
+  
         // Add the column to the default view
         await fetch(
           `${siteUrl}/_api/web/lists/getbytitle('${listName}')/defaultview/viewfields/addviewfield('${tableHeaders[i]}')`,
@@ -133,11 +138,14 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       }
   
       alert("List created successfully!");
+      return true; // Return true to indicate success
     } catch (error) {
       console.error(error);
       alert("Error creating the SharePoint list.");
+      return false; // Return false if an error occurred
     }
   };
+  
   const createDocumentLibrary = async () => {
     try {
       const requestDigest = await getRequestDigest(); // Fetch digest dynamically
@@ -176,7 +184,11 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
         value={listName}
         onChange={(e) => setListName(e.target.value)}
       />
-      <input type="file" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} />
+      <input
+        type="file"
+        accept=".xlsx, .xls, .csv"
+        onChange={handleFileUpload}
+      />
       {tableData.length > 0 && (
         <div className={styles.tableContainer}>
           <div className={styles.verticalTableWrapper}>
@@ -195,10 +207,16 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
                     <td>
                       <select
                         value={columnTypes[index]}
-                        onChange={(e) => handleColumnTypeChange(index, e.target.value)}
+                        onChange={(e) =>
+                          handleColumnTypeChange(index, e.target.value)
+                        }
                       >
-                        <option value="Single line of text">Single line of text</option>
-                        <option value="Multiple Line of text">Multiple Line of text</option>
+                        <option value="Single line of text">
+                          Single line of text
+                        </option>
+                        <option value="Multiple Line of text">
+                          Multiple Line of text
+                        </option>
                         <option value="Number">Number</option>
                         <option value="Currency">Currency</option>
                       </select>
@@ -236,8 +254,10 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
           </div>
           <button
             onClick={async () => {
-              await createSharePointList();
-              await createDocumentLibrary();
+              const listCreationSuccess = await createSharePointList(); // Capture if list creation is successful
+              if (listCreationSuccess) {
+                await createDocumentLibrary(); // Create library only if list creation is successful
+              }
             }}
           >
             Create List and Library
