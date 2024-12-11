@@ -37,17 +37,14 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       reader.readAsBinaryString(file);
     }
   };
-
   const handleColumnTypeChange = (index: number, type: string) => {
     const newColumnTypes = [...columnTypes];
     newColumnTypes[index] = type;
     setColumnTypes(newColumnTypes);
   };
-
   const handleUniqueIdChange = (index: number) => {
     setUniqueId(tableHeaders[index]);
   };
-
   const getRequestDigest = async (): Promise<string> => {
     const response = await fetch(`${siteUrl}/_api/contextinfo`, {
       method: "POST",
@@ -58,22 +55,42 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     const data = await response.json();
     return data.d.GetContextWebInformation.FormDigestValue;
   };
-
+  // new createhsharepoint list with the number validation of the data
   const createSharePointList = async () => {
     if (!listName || !uniqueId) {
       alert("Please provide a list name and select a unique ID.");
       return;
     }
-
+  
+    // Validate data for Number column types
+    const invalidCells: { row: number; col: string }[] = [];
+    tableData.forEach((row, rowIndex) => {
+      columnTypes.forEach((type, colIndex) => {
+        if (type === "Number" && isNaN(Number(row[colIndex]))) {
+          invalidCells.push({ row: rowIndex + 1, col: tableHeaders[colIndex] });
+        }
+      });
+    });
+  
+    if (invalidCells.length > 0) {
+      alert(
+        `Invalid data found in the following cells:\n${invalidCells
+          .map((cell) => `Row ${cell.row}, Column ${cell.col}`)
+          .join("\n")}`
+      );
+      return; // Stop submission if invalid cells exist
+    }
+  
     try {
       const requestDigest = await getRequestDigest(); // Fetch digest dynamically
-
+  
+      // Create the list
       const listPayload = {
         __metadata: { type: "SP.List" },
         Title: listName,
         BaseTemplate: 100, // Custom List
       };
-
+  
       const response = await fetch(`${siteUrl}/_api/web/lists`, {
         method: "POST",
         headers: {
@@ -82,11 +99,11 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
         },
         body: JSON.stringify(listPayload),
       });
-
+  
       if (!response.ok) {
         throw new Error(`Error creating list: ${response.statusText}`);
       }
-
+  
       // Add columns to the list
       for (let i = 0; i < tableHeaders.length; i++) {
         await fetch(`${siteUrl}/_api/web/lists/getbytitle('${listName}')/fields`, {
@@ -101,15 +118,26 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
             FieldTypeKind: columnTypes[i] === "Number" ? 9 : 2, // Adjust field types
           }),
         });
+ 
+        // Add the column to the default view
+        await fetch(
+          `${siteUrl}/_api/web/lists/getbytitle('${listName}')/defaultview/viewfields/addviewfield('${tableHeaders[i]}')`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json;odata=verbose",
+              "X-RequestDigest": requestDigest,
+            },
+          }
+        );
       }
-
+  
       alert("List created successfully!");
     } catch (error) {
       console.error(error);
       alert("Error creating the SharePoint list.");
     }
   };
-
   const createDocumentLibrary = async () => {
     try {
       const requestDigest = await getRequestDigest(); // Fetch digest dynamically
@@ -139,7 +167,6 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       alert("Error creating the document library.");
     }
   };
-
   return (
     <div className={styles.mainBox}>
       <h2>Create SharePoint List</h2>
