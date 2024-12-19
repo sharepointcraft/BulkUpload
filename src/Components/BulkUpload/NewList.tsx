@@ -25,6 +25,9 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
 
+    // Reset the unique ID
+    setUniqueId("");
+
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -86,7 +89,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
   };
 
   //Data Validation 
-  const validateColumns = async () => {
+  /*const validateColumns = async () => {
     const invalidCells: { row: number; col: string; issue: string }[] = [];
 
     tableData.forEach((row, rowIndex) => {
@@ -119,8 +122,88 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     }
 
     return true; // Return true if all data is valid
+  };*/
+
+  const validateColumns = async () => {
+    const invalidCells: { row: number; col: string; issue: string }[] = [];
+
+    tableData.forEach((row, rowIndex) => {
+      columnTypes.forEach((type, colIndex) => {
+        let cellValue = row[colIndex];
+
+        if (type === "Number" && isNaN(Number(cellValue))) {
+          // Collect invalid cells for Number columns
+          invalidCells.push({
+            row: rowIndex + 1,
+            col: tableHeaders[colIndex],
+            issue: "Expected a number",
+          });
+
+        } else if (type === "Single line of text") {
+
+          if (typeof cellValue === "number") {
+            // Convert numbers to strings for text columns
+            row[colIndex] = String(cellValue); // Convert number to string
+          }
+
+          // Check character length for Single line of text
+          if (cellValue.length > 255) {
+            invalidCells.push({
+              row: rowIndex + 1,
+              col: tableHeaders[colIndex],
+              issue: "Exceeded 255 character limit",
+            });
+          }
+
+        }
+      });
+    });
+
+    if (invalidCells.length > 0) {
+      const message = `Invalid data found in the following cells:\n${invalidCells
+        .map(
+          (cell) =>
+            `Row ${cell.row}, Column ${cell.col}: ${cell.issue}`
+        )
+        .join("\n")}`;
+      alert(message);
+      return false; // Return false if data is invalid
+    }
+
+    return true; // Return true if all data is valid
   };
 
+
+  //Attachment Upload
+  /*const handleAttachmentUpload = async (e: React.ChangeEvent<HTMLInputElement>, rowIndex: number) => {
+    const files = e.target.files;
+    
+    if (!files || files.length === 0) return alert("Please select a file to upload.");
+    
+    const file = files[0]; // Get the first file
+    
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const fileContent = reader.result as string; // Read file content as a base64 string
+  
+        // Update the tableData with the uploaded file details
+        const updatedTableData = [...tableData];
+        updatedTableData[rowIndex].attachment = {
+          name: file.name,
+          content: fileContent,
+        };
+  
+        setTableData(updatedTableData);
+  
+        alert("File uploaded successfully!");
+      };
+      reader.readAsDataURL(file); // Read file as base64
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Failed to upload the file.");
+    }
+  };*/
 
 
   //new createsharepoint list
@@ -172,7 +255,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
             fieldTypeKind = 9; // Number Field
             break;
           case "Currency":
-            fieldTypeKind = 8; // Currency Field
+            fieldTypeKind = 10; // Currency Field
             break;
           case "Single line of text":
           default:
@@ -282,6 +365,13 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     const requestDigest = await getRequestDigest(); // Fetch digest dynamically
     let allDataAddedSuccessfully = true; // Flag to track overall success
 
+    const parseCurrency = (value: string | number): number => {
+      if (typeof value === "string") {
+        return Number(value.replace(/[^0-9.]/g, "")); // Remove '$' and other non-numeric characters
+      }
+      return Number(value);
+    };
+
     // Now add data to the list
     for (const row of tableData) {
       const itemPayload: Record<string, any> = {};
@@ -297,7 +387,15 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
         //if (header.includes("Date") && typeof cellValue === "string" && (cellValue.includes("/") || cellValue.includes("-"))) {
         //cellValue = formatToISO(cellValue); // Use your date format conversion function here
         //}
-        itemPayload[internalColumnName] = row[index]; // Map each header to its corresponding cell value
+        // Convert number to string for Currency column and add a dollar sign
+        const cellValue = row[index]; // Get the cell value
+        if (columnTypes[index] === "Currency") {
+          const numericValue = parseCurrency(cellValue);
+
+          itemPayload[internalColumnName] = numericValue;
+        } else {
+          itemPayload[internalColumnName] = cellValue; // Map each header to its corresponding cell value
+        }
       });
 
       try {
@@ -371,14 +469,24 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
               <table className={styles.verticalTable}>
                 <thead>
                   <tr>
+                    <th className={styles.uniqueID}>Unique ID</th>
                     <th>Column Names</th>
                     <th>Column Type</th>
-                    <th>Unique ID</th>
+                    <th>Sample Data1</th>
+                    <th>Sample Data2</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tableHeaders.map((header, index) => (
                     <tr key={index}>
+                      <td>
+                        <input
+                          type="radio"
+                          name="uniqueId"
+                          checked={uniqueId === header}
+                          onChange={() => handleUniqueIdChange(index)}
+                        />
+                      </td>
                       <td>{header}</td>
                       <td>
                         <select
@@ -397,23 +505,38 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
                           <option value="Currency">Currency</option>
                           <option value="DateTime">Date</option>
                         </select>
+                        {columnTypes[index] === "Single line of text" && (
+                          <span style={{ marginLeft: "10px", color: "red", fontSize: "1em" }}>
+                            255 characters limit
+                          </span>
+                        )}
                       </td>
-                      <td>
-                        <input
-                          type="radio"
-                          name="uniqueId"
-                          checked={uniqueId === header}
-                          onChange={() => handleUniqueIdChange(index)}
-                        />
+                      <td>{tableData.slice(0, 1).map((row, Rindex) => (
+                        <tr key={Rindex}>
+                          {row.map((cell, Cindex) => (
+                            <td key={Cindex}>{cell}</td>
+                          ))}
+                        </tr>
+                      ))}
+                      </td>
+                      <td>{tableData.slice(1, 2).map((row, Rindex) => (
+                        <td key={Rindex}>
+                          {row.map((cell, Cindex) => (
+                            <tr key={Cindex}>{cell}</tr>
+                          ))}
+                        </td>
+                      ))}
                       </td>
                     </tr>
                   ))}
+
                 </tbody>
-              </table>) :
-              (<table className={styles.dataTable}>
+              </table>) : (
+              <table className={styles.dataTable}>
                 <thead>
                   <tr>
-                    {tableHeaders.map((header, index) => (
+                    {/* Add "Attachment" column to the dynamically generated headers */}
+                    {tableHeaders.concat("Attachment").map((header, index) => (
                       <th key={index}>{header}</th>
                     ))}
                   </tr>
@@ -424,10 +547,18 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
                       {row.map((cell, cellIndex) => (
                         <td key={cellIndex}>{cell}</td>
                       ))}
+                      {/* Add an empty cell or a placeholder for the "Attachment" column */}
+                      <td key="attachment">
+                        <input
+                          type="file"
+
+                        />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
-              </table>)}
+              </table>
+            )}
           </div>
           <div className={`${styles.homeBtn}`}>
             <button>

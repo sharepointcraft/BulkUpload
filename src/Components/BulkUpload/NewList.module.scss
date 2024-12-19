@@ -92,7 +92,10 @@
   .verticalTable th {
     background-color: #f2f2f2;
   }
-
+  
+  .verticalTable .uniqueID{
+    width: 50px;
+  }
   .tableHeader {
     width: 100%;
     border-collapse: collapse;
