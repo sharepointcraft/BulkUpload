@@ -4,14 +4,11 @@ import { Link } from "react-router-dom";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import styles from "../../Components/BulkUpload/NewList.module.scss";
 
-
-
 interface INewListProps {
   context: WebPartContext;
 }
 
 const NewList: React.FC<INewListProps> = ({ context }) => {
-
   const [tableData, setTableData] = React.useState<string[][]>([]);
   const [tableHeaders, setTableHeaders] = React.useState<string[]>([]);
   const [columnTypes, setColumnTypes] = React.useState<string[]>([]);
@@ -23,61 +20,62 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     context.pageContext.web.absoluteUrl ||
     "https://realitycraftprivatelimited.sharepoint.com/sites/BulkUpload";
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-
-    // Reset the unique ID
-    setUniqueId("");
-
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const data = e.target?.result;
-        if (typeof data === "string" || data instanceof ArrayBuffer) {
-          const workbook = XLSX.read(data, { type: "binary" });
-          const sheetName = workbook.SheetNames[0];
-          const sheetData = XLSX.utils.sheet_to_json(
-            workbook.Sheets[sheetName],
-            { header: 1 }
-          ) as string[][];
-
-          const [headers, ...rows] = sheetData;
-
-          // Format the rows to handle Excel date conversion
-          const formattedRows = rows.map((row) =>
-            row.map((cell, index) => {
-              // Check if the column type is 'Date' and the cell is a number
-              if (
-                typeof cell === "number" &&
-                headers[index] === "Date"
-              ) {
-                const excelDate = new Date((cell - 25569) * 86400000); // Excel date to JavaScript date
-                return excelDate.toLocaleDateString("en-US"); // Format to MM/DD/YYYY
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setUniqueId(""); // Reset the unique ID
+    
+      const file = event.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const data = e.target?.result;
+          if (typeof data === "string" || data instanceof ArrayBuffer) {
+            const workbook = XLSX.read(data, { type: "binary" });
+            const sheetName = workbook.SheetNames[0];
+            const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 }) as string[][];
+    
+            const [headers, ...rows] = sheetData;
+    
+            // Format rows (removed date detection logic)
+            const formattedRows = rows.map((row) =>
+              row.map((cell) => cell) // No date conversion here
+            );
+    
+            // Set headers and data
+            setTableHeaders(headers as string[]);
+            setTableData(formattedRows);
+    
+            // Infer column types based on data
+            const inferredTypes = headers.map((header, colIndex) => {
+              // Check all rows for the given column to determine the column type
+              const firstRow = formattedRows.map(row => row[colIndex]);
+              
+              // If any cell in this column exceeds 255 characters, it's "Multiple Line of text"
+              const isMultipleLineText = firstRow.some(cell => typeof cell === 'string' && cell.length > 255);
+    
+              if (isMultipleLineText) {
+                return "Multiple Line of text"; // If any cell has more than 255 characters
+              } else if (firstRow.some(cell => !isNaN(Number(cell)))) {
+                return "Number"; // If the first row value is numeric
+              } else {
+                return "Single line of text"; // Default to text if none of the conditions match
               }
-              return cell; // Keep other values as-it is
-            })
-          );
-          setTableHeaders(headers as string[]); // Set headers
-
-          setTableData(formattedRows); // Set rows
-
-          setColumnTypes(Array(headers.length).fill("Single line of text"));
-        }
-      };
-      reader.readAsBinaryString(file);
-    }
-  };
-
-
-  const handleColumnTypeChange = (index: number, type: string) => {
-    const newColumnTypes = [...columnTypes];
-    newColumnTypes[index] = type;
-    setColumnTypes(newColumnTypes);
-  };
-  const handleUniqueIdChange = (index: number) => {
+            });
+    
+            setColumnTypes(inferredTypes); // Set the inferred column types
+          }
+        };
+        reader.readAsBinaryString(file);
+      }
+    };
+    const handleColumnTypeChange = (index: number, type: string) => {
+      const newColumnTypes = [...columnTypes];
+      newColumnTypes[index] = type;
+      setColumnTypes(newColumnTypes);
+    };
+    const handleUniqueIdChange = (index: number) => {
     setUniqueId(tableHeaders[index]);
-  };
-  const getRequestDigest = async (): Promise<string> => {
+    };
+    const getRequestDigest = async (): Promise<string> => {
     const response = await fetch(`${siteUrl}/_api/contextinfo`, {
       method: "POST",
       headers: {
@@ -86,128 +84,62 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     });
     const data = await response.json();
     return data.d.GetContextWebInformation.FormDigestValue;
-  };
-
-  //Data Validation 
-  /*const validateColumns = async () => {
-    const invalidCells: { row: number; col: string; issue: string }[] = [];
-
-    tableData.forEach((row, rowIndex) => {
-      columnTypes.forEach((type, colIndex) => {
-        const cellValue = row[colIndex];
-
-        if (type === "Number" && isNaN(Number(cellValue))) {
-          // Collect invalid cells for Number columns
+    };
+    const validateColumns = async () => {
+      const invalidCells: { row: number; col: string; issue: string }[] = [];
+    
+      // Check if column headers contain special characters
+      const specialCharPattern = /[^a-zA-Z0-9_ ]/; // Allow letters, numbers, underscores, and spaces
+      tableHeaders.forEach((header, index) => {
+        if (specialCharPattern.test(header)) {
           invalidCells.push({
-            row: rowIndex + 1,
-            col: tableHeaders[colIndex],
-            issue: "Expected a number",
+            row: 0, // Header row
+            col: header,
+            issue: "Contains special characters",
           });
-        } else if (type === "Single line of text" && typeof cellValue === "number") {
-          // Convert numbers to strings for text columns
-          row[colIndex] = String(cellValue);
         }
       });
-    });
-
-    if (invalidCells.length > 0) {
-      const message = `Invalid data found in the following cells:\n${invalidCells
-        .map(
-          (cell) =>
-            `Row ${cell.row}, Column ${cell.col}: ${cell.issue}`
-        )
-        .join("\n")}`;
-      alert(message);
-      return false; // Return false if data is invalid
-    }
-
-    return true; // Return true if all data is valid
-  };*/
-
-  const validateColumns = async () => {
-    const invalidCells: { row: number; col: string; issue: string }[] = [];
-
-    tableData.forEach((row, rowIndex) => {
-      columnTypes.forEach((type, colIndex) => {
-        let cellValue = row[colIndex];
-
-        if (type === "Number" && isNaN(Number(cellValue))) {
-          // Collect invalid cells for Number columns
-          invalidCells.push({
-            row: rowIndex + 1,
-            col: tableHeaders[colIndex],
-            issue: "Expected a number",
-          });
-
-        } else if (type === "Single line of text") {
-
-          if (typeof cellValue === "number") {
-            // Convert numbers to strings for text columns
-            row[colIndex] = String(cellValue); // Convert number to string
-          }
-
-          // Check character length for Single line of text
-          if (cellValue.length > 255) {
+    
+      tableData.forEach((row, rowIndex) => {
+        columnTypes.forEach((type, colIndex) => {
+          let cellValue = row[colIndex];
+    
+          if (type === "Number" && isNaN(Number(cellValue))) {
+            // Collect invalid cells for Number columns
             invalidCells.push({
               row: rowIndex + 1,
               col: tableHeaders[colIndex],
-              issue: "Exceeded 255 character limit",
+              issue: "Expected a number",
             });
+          } else if (type === "Single line of text") {
+            if (typeof cellValue === "number") {
+              // Convert numbers to strings for text columns
+              row[colIndex] = String(cellValue); // Convert number to string
+            }
+    
+            // Check character length for Single line of text
+            if (cellValue.length > 255) {
+              invalidCells.push({
+                row: rowIndex + 1,
+                col: tableHeaders[colIndex],
+                issue: "Exceeded 255 character limit",
+              });
+            }
           }
-
-        }
+        });
       });
-    });
-
-    if (invalidCells.length > 0) {
-      const message = `Invalid data found in the following cells:\n${invalidCells
-        .map(
-          (cell) =>
-            `Row ${cell.row}, Column ${cell.col}: ${cell.issue}`
-        )
-        .join("\n")}`;
-      alert(message);
-      return false; // Return false if data is invalid
-    }
-
-    return true; // Return true if all data is valid
-  };
-
-
-  //Attachment Upload
-  /*const handleAttachmentUpload = async (e: React.ChangeEvent<HTMLInputElement>, rowIndex: number) => {
-    const files = e.target.files;
     
-    if (!files || files.length === 0) return alert("Please select a file to upload.");
+      if (invalidCells.length > 0) {
+        const message = `Invalid data found in the following cells:\n${invalidCells
+          .map((cell) => `Row ${cell.row}, Column ${cell.col}: ${cell.issue}`)
+          .join("\n")}`;
+        alert(message);
+        return false; // Return false if data is invalid
+      }
     
-    const file = files[0]; // Get the first file
-    
-    try {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const fileContent = reader.result as string; // Read file content as a base64 string
-  
-        // Update the tableData with the uploaded file details
-        const updatedTableData = [...tableData];
-        updatedTableData[rowIndex].attachment = {
-          name: file.name,
-          content: fileContent,
-        };
-  
-        setTableData(updatedTableData);
-  
-        alert("File uploaded successfully!");
-      };
-      reader.readAsDataURL(file); // Read file as base64
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      alert("Failed to upload the file.");
-    }
-  };*/
-
-
-  //new createsharepoint list
-  const createSharePointList = async (): Promise<boolean> => {
+      return true; // Return true if all data is valid
+    };
+    const createSharePointList = async (): Promise<boolean> => {
     if (!listName || !uniqueId) {
       alert("Please provide a list name and select a unique ID.");
       return false; // Return false to indicate failure
@@ -261,19 +193,22 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
           default:
             fieldTypeKind = 2; // Single Line of Text
         }
-        await fetch(`${siteUrl}/_api/web/lists/getbytitle('${listName}')/fields`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json;odata=verbose",
-            "X-RequestDigest": requestDigest,
-          },
-          body: JSON.stringify({
-            __metadata: { type: metadataType },
-            Title: tableHeaders[i],
-            FieldTypeKind: fieldTypeKind,
-            ...additionalProperties,
-          }),
-        });
+        await fetch(
+          `${siteUrl}/_api/web/lists/getbytitle('${listName}')/fields`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json;odata=verbose",
+              "X-RequestDigest": requestDigest,
+            },
+            body: JSON.stringify({
+              __metadata: { type: metadataType },
+              Title: tableHeaders[i],
+              FieldTypeKind: fieldTypeKind,
+              ...additionalProperties,
+            }),
+          }
+        );
 
         // Add the column to the default view
         await fetch(
@@ -295,11 +230,8 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       alert("Error creating the SharePoint list or adding data.");
       return false; // Return false if an error occurred
     }
-  };
-
-
-
-  const createDocumentLibrary = async () => {
+    };
+    const createDocumentLibrary = async () => {
     try {
       const requestDigest = await getRequestDigest(); // Fetch digest dynamically
 
@@ -327,41 +259,8 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       console.error(error);
       alert("Error creating the document library.");
     }
-  };
-
-
-  //Date Format
-  /*const formatToISO = (dateValue: string): string => {
-    let month, day, year;
-
-    if (dateValue.includes("/")) {
-      // Split using "/"
-      [month, day, year] = dateValue.split("/");
-
-      // Check if the format is indeed MM/DD/YYYY
-      if (month.length !== 2 || day.length !== 2 || year.length !== 4) {
-        throw new Error("Unsupported date format");
-      }
-    } else if (dateValue.includes("-")) {
-      // Split using "-"
-      [month, day, year] = dateValue.split("-");
-
-      // Check if the format is indeed MM-DD-YYYY
-      if (month.length !== 2 || day.length !== 2 || year.length !== 4) {
-        throw new Error("Unsupported date format");
-      }
-    } else {
-      throw new Error("Unsupported date format");
-    }
-
-    // Convert to ISO format
-    const isoDate = new Date(`${year}-${month}-${day}T00:00:00Z`);
-    return isoDate.toISOString();
-  };*/
-
-  //Add Data to list
-  const addDatatoList = async () => {
-
+    };
+    const addDatatoList = async () => {
     const requestDigest = await getRequestDigest(); // Fetch digest dynamically
     let allDataAddedSuccessfully = true; // Flag to track overall success
 
@@ -377,17 +276,9 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       const itemPayload: Record<string, any> = {};
 
       tableHeaders.forEach((header, index) => {
-
         const internalColumnName = header
-          .replace(/\s+/g, "_x0020_")  // Replace spaces with _x0020_
-          .replace(/\//g, "_x002f_");  // Replace slashes with _x002f_
-        //let cellValue = row[index];
-
-        // Convert date if necessary
-        //if (header.includes("Date") && typeof cellValue === "string" && (cellValue.includes("/") || cellValue.includes("-"))) {
-        //cellValue = formatToISO(cellValue); // Use your date format conversion function here
-        //}
-        // Convert number to string for Currency column and add a dollar sign
+          .replace(/\s+/g, "_x0020_") // Replace spaces with _x0020_
+          .replace(/\//g, "_x002f_"); // Replace slashes with _x002f_
         const cellValue = row[index]; // Get the cell value
         if (columnTypes[index] === "Currency") {
           const numericValue = parseCurrency(cellValue);
@@ -399,23 +290,24 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       });
 
       try {
-        const response = await fetch(`${siteUrl}/_api/web/lists/getbytitle('${listName}')/items`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json;odata=verbose",
-            "X-RequestDigest": requestDigest,
-          },
-          body: JSON.stringify({
-            __metadata: { type: "SP.ListItem" },
-            ...itemPayload,
-          }),
-        });
+        const response = await fetch(
+          `${siteUrl}/_api/web/lists/getbytitle('${listName}')/items`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json;odata=verbose",
+              "X-RequestDigest": requestDigest,
+            },
+            body: JSON.stringify({
+              __metadata: { type: "SP.ListItem" },
+              ...itemPayload,
+            }),
+          }
+        );
 
         if (!response.ok) {
           throw new Error(`Error adding item to list: ${response.statusText}`);
-        }
-        else {
-
+        } else {
         }
       } catch (error) {
         console.error("Failed to add data to list:", error);
@@ -429,177 +321,189 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     } else {
       alert("Error adding data to the SharePoint list.");
     }
-  };
-  return (
-    <div className={styles.mainBox}>
-      <div className={`${styles.homeBtn}`}>
-        {" "}
-        <button>
-          <Link to="/">Home</Link>
-        </button>
-      </div>
-      <div className={`${styles.InnerBox}`}>
-        <h1>Bulk Upload</h1>
-      </div>
-      <div className={styles["form-group"]}>
-        <label htmlFor="listName">List Name:</label>
-        <input
-          type="text"
-          id="listName"
-          placeholder="Enter list name"
-          value={listName}
-          onChange={(e) => setListName(e.target.value)}
-        />
-      </div>
-      {showTable && ( // Conditionally render the file upload section
+    };
+    return (
+      <div className={styles.mainBox}>
+        {/* Home Button */}
+        <div className={`${styles.homeBtn}`}>
+          <button>
+            <Link to="/">Home</Link>
+          </button>
+        </div>
+    
+        {/* Title Of the Page */}
+        <div className={`${styles.InnerBox}`}>
+          <h1>Bulk Upload</h1>
+        </div>
+    
+        {/* Form Group for list name */}
         <div className={styles["form-group"]}>
-          <label htmlFor="fileUpload">Upload File:</label>
+          <label htmlFor="listName">List Name:</label>
           <input
-            type="file"
-            id="fileUpload"
-            accept=".xlsx, .xls, .csv"
-            onChange={handleFileUpload}
+            type="text"
+            id="listName"
+            placeholder="Enter list name"
+            value={listName}
+            onChange={(e) => setListName(e.target.value)}
           />
         </div>
-      )}
-      {tableData.length > 0 && (
-        <div className={styles.tableContainer}>
-          <div className={styles.verticalTableWrapper}>
-            {showTable ? (
-              <table className={styles.verticalTable}>
-                <thead>
-                  <tr>
-                    <th className={styles.uniqueID}>Unique ID</th>
-                    <th>Column Names</th>
-                    <th>Column Type</th>
-                    <th>Sample Data1</th>
-                    <th>Sample Data2</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tableHeaders.map((header, index) => (
-                    <tr key={index}>
-                      <td>
-                        <input
-                          type="radio"
-                          name="uniqueId"
-                          checked={uniqueId === header}
-                          onChange={() => handleUniqueIdChange(index)}
-                        />
-                      </td>
-                      <td>{header}</td>
-                      <td>
-                        <select
-                          value={columnTypes[index]}
-                          onChange={(e) =>
-                            handleColumnTypeChange(index, e.target.value)
-                          }
-                        >
-                          <option value="Single line of text">
-                            Single line of text
-                          </option>
-                          <option value="Multiple Line of text">
-                            Multiple Line of text
-                          </option>
-                          <option value="Number">Number</option>
-                          <option value="Currency">Currency</option>
-                          <option value="DateTime">Date</option>
-                        </select>
-                        {columnTypes[index] === "Single line of text" && (
-                          <span style={{ marginLeft: "10px", color: "red", fontSize: "1em" }}>
-                            255 characters limit
-                          </span>
-                        )}
-                      </td>
-                      <td>{tableData.slice(0, 1).map((row, Rindex) => (
-                        <tr key={Rindex}>
-                          {row.map((cell, Cindex) => (
-                            <td key={Cindex}>{cell}</td>
-                          ))}
-                        </tr>
-                      ))}
-                      </td>
-                      <td>{tableData.slice(1, 2).map((row, Rindex) => (
-                        <td key={Rindex}>
-                          {row.map((cell, Cindex) => (
-                            <tr key={Cindex}>{cell}</tr>
-                          ))}
-                        </td>
-                      ))}
-                      </td>
-                    </tr>
-                  ))}
-
-                </tbody>
-              </table>) : (
-              <table className={styles.dataTable}>
-                <thead>
-                  <tr>
-                    {/* Add "Attachment" column to the dynamically generated headers */}
-                    {tableHeaders.concat("Attachment").map((header, index) => (
-                      <th key={index}>{header}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {tableData.map((row, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {row.map((cell, cellIndex) => (
-                        <td key={cellIndex}>{cell}</td>
-                      ))}
-                      {/* Add an empty cell or a placeholder for the "Attachment" column */}
-                      <td key="attachment">
-                        <input
-                          type="file"
-
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+    
+        {/* Form Group for file upload */}
+        {showTable && (
+          <div className={styles["form-group"]}>
+            <label htmlFor="fileUpload">Upload File:</label>
+            <input
+              type="file"
+              id="fileUpload"
+              accept=".xlsx, .xls, .csv"
+              onChange={handleFileUpload}
+            />
           </div>
+        )}
+    
+        {/* Table Display */}
+        {tableData.length > 0 && (
+          <div className={styles.tableContainer}>
+            {/* Vertical Table */}
+            <div className={styles.verticalTableWrapper}>
+              {showTable ? (
+                <table className={styles.verticalTable}>
+                  <thead>
+                    <tr>
+                      <th className={styles.uniqueID}>Unique ID</th>
+                      <th>Column Names</th>
+                      <th>Column Type</th>
+                      <th>Sample Data 1</th>
+                      <th>Sample Data 2</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableHeaders.map((header, index) => (
+                      <tr key={index}>
+                        <td>
+                          <input
+                            type="radio"
+                            name="uniqueId"
+                            checked={uniqueId === header}
+                            onChange={() => handleUniqueIdChange(index)}
+                          />
+                        </td>
+                        <td>{header}</td>
+                        <td>
+                          <select
+                            value={columnTypes[index]}
+                            onChange={(e) => handleColumnTypeChange(index, e.target.value)}
+                          >
+                            <option value="Single line of text">Single line of text</option>
+                            <option value="Multiple Line of text">Multiple Line of text</option>
+                            <option value="Number">Number</option>
+                            <option value="Currency">Currency</option>
+                            <option value="DateTime">Date</option>
+                          </select>
+                          {columnTypes[index] === "Single line of text" && (
+                            <div className={`${styles.infomessage}`}>
+                              <span className={`${styles.infoicon}`}>ℹ️</span>
+                              255 characters limit
+                            </div>
+                          )}
+                          {columnTypes[index] === "Multiple Line of text" && (
+                            <div className={`${styles.infomessage}`}>
+                              <span className={`${styles.infoicon}`}>ℹ️</span>
+                              Multiple lines allowed.
+                            </div>
+                          )}
+                          {columnTypes[index] === "Number" && (
+                            <div className={`${styles.infomessage}`}>
+                              <span className={`${styles.infoicon}`}>ℹ️</span>
+                              Enter a number (no symbols).
+                            </div>
+                          )}
+                          {columnTypes[index] === "DateTime" && (
+                            <div className={`${styles.infomessage}`}>
+                              <span className={`${styles.infoicon}`}>ℹ️</span>
+                              Select a date (MM/DD/YYYY).
+                            </div>
+                          )}
+                          {columnTypes[index] === "Currency" && (
+                            <div className={`${styles.infomessage}`}>
+                              <span className={`${styles.infoicon}`}>ℹ️</span>
+                              Enter a currency value.
+                            </div>
+                          )}
+                        </td>
+                        <td>{tableData[0]?.[index] || ""}</td>
+                        <td>{tableData[1]?.[index] || ""}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <table className={styles.dataTable}>
+                  <thead>
+                    <tr>
+                      {tableHeaders.concat("Attachment").map((header, index) => (
+                        <th key={index}>{header}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableData.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {row.map((cell, cellIndex) => (
+                          <td key={cellIndex}>{cell}</td>
+                        ))}
+                        <td key="attachment">
+                          <input type="file" />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        )}
+    
+        {/* Back and Submit Buttons */}
+        <div className={`${styles.backSubmitbtn}`}>
           <div className={`${styles.homeBtn}`}>
             <button>
               <Link to="/selectlisttype">Back</Link>
             </button>
           </div>
-          <div className={`${styles.homeBtn} ${styles.validateBtn}`}>
+          <div className={`${styles.homeBtn}`}>
             {showTable ? (
               <button
                 onClick={async () => {
                   const isValid = await validateColumns();
                   if (isValid) {
                     setShowTable(!showTable);
-                  }
-                  else {
+                  } else {
                     alert("Validation failed. Please correct the data.");
                   }
                 }}
               >
                 Validate
-              </button>) :
-
-              (<button
+              </button>
+            ) : (
+              <button
                 onClick={async () => {
                   const islistCreationSuccess = await createSharePointList();
                   if (islistCreationSuccess) {
-                    await createDocumentLibrary(); // Capture if list creation is successful
+                    await createDocumentLibrary();
                     await addDatatoList();
+                  } else {
+                    alert("Error in creating the SharePoint list.");
                   }
-                  else {
-                    alert("Error in creating the sharepoint list.");
-                  }
-                }}>
+                }}
+              >
                 Submit
-              </button>)}
-
+              </button>
+            )}
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+    
 };
-
 export default NewList;
