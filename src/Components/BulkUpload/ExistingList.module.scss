@@ -1,0 +1,171 @@
+/* Container styling */
+.dropdowncontainer {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    //max-width: 400px;
+    margin: 0 auto;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Header styling */
+  .dropdownheader {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  
+  /* Dropdown select styling */
+  .dropdownselect {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s;
+  }
+  
+  .dropdownselect:focus {
+    border-color: #0078d4;
+    outline: none;
+  }
+  
+  /* Selected text styling */
+  .dropdownselected {
+    margin-top: 15px;
+    font-size: 16px;
+    color: #0078d4;
+    text-align: center;
+  }
+
+
+  .fileuploadcontainer {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .fileinput {
+    margin-top: 10px;
+    padding: 8px;
+    font-size: 14px;
+  }
+  
+  .tablecontainer {
+    margin-top: 20px;
+    overflow-x: auto;
+  }
+  
+  .datatable {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+    text-align: left;
+  }
+  
+  .datatable th, .datatable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  .datatable th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+  }
+
+  /* Styles for the popup container */
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Transparent black overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Ensure it appears on top of everything */
+}
+
+/* Styles for the popup content */
+.popupContent {
+  background-color: white; /* White background */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Slight shadow for depth */
+  width: 400px;
+  max-width: 90%;
+  text-align: center;
+}
+
+/* Styles for the popup header */
+.popupContent h2 {
+  margin-top: 0;
+  font-size: 1.5em;
+  color: #333;
+}
+
+/* Styles for the popup message */
+.popupContent p {
+  margin: 10px 0 20px;
+  color: #666;
+  font-size: 1em;
+}
+
+/* Styles for the close button */
+.popupContent button {
+  padding: 10px 20px;
+  font-size: 1em;
+  color: white;
+  background-color: #0078d4; /* Microsoft blue */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.popupContent button:hover {
+  background-color: #005a9e; /* Darker blue on hover */
+}
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popupcontent {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  text-align: center;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.closebutton {
+  background-color: #0078d4;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  margin-top: 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.closebutton:hover {
+  background-color: #005a9e;
+}
+
+  
+  
+  
