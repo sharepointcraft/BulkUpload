@@ -318,11 +318,9 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
           throw new Error(`Error adding item to list: ${response.statusText}`);
 
         }
-        return true;
       } catch (error) {
         console.error("Failed to add data to list:", error);
         allDataAddedSuccessfully = false; // Mark failure
-        return false;
       }
     }
 
