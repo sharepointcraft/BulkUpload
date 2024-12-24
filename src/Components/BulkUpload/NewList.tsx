@@ -607,12 +607,12 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
 
       {/* Back and Submit Buttons */}
       {showButtons && <div className={`${styles.backSubmitbtn}`}>
-        <div className={`${styles.homeBtn}`}>
+        <div className={`${styles.backBtn}`}>
           <button>
             <Link to="/selectlisttype">Back</Link>
           </button>
         </div>
-        <div className={`${styles.homeBtn}`}>
+        <div className={`${styles.validateBtn}`}>
           {showTable ? (
             <button
               onClick={async () => {
