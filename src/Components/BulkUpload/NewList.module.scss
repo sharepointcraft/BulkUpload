@@ -400,34 +400,130 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
+  animation: fadeIn 0.5s ease-in-out;
+  overflow: visible; /* Ensure no clipping occurs */
 }
 
+/* Add fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Success Popup Styles */
 .popupContent {
-  background-color: #fff;
+  display: flex; /* Make the content a flex container */
+  flex-direction: column; /* Arrange children in a column */
+  justify-content: center; /* Vertically center the children */
+  align-items: center;
+  background: linear-gradient(135deg, #ffffff, #f9f9f9);
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 16px;
   text-align: center;
-  max-width: 300px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  height: 250px;
+  width: 250px;
+  max-width: 90%;
+  box-sizing: border-box; /* Ensure padding and borders are included in width and height */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 2px solid #4caf50; /* Replace with your primary color */
+  animation: scaleUp 0.4s ease-in-out;
+  overflow: visible; /* Ensure corners are not clipped */
 }
 
-.progressBar {
-  background-color: #f3f3f3;
-  border-radius: 4px;
-  height: 10px;
-  margin-bottom: 10px;
-  overflow: hidden;
+/* Add scale-up animation */
+@keyframes scaleUp {
+  from {
+    transform: scale(0.8);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
-.progress {
+/* Circular Progress Bar */
+.circularProgress {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
+.circularProgress svg {
+  transform: rotate(-90deg); /* Start progress bar from top */
+  width: 100%;
   height: 100%;
-  background-color: #4caf50;
-  transition: width 0.3s ease;
+}
+
+.circularProgress .progressCircle {
+  fill: none;
+  stroke-width: 8;
+}
+
+.circularProgress .progressCircle.bg {
+  stroke: #e0e0e0; /* Background color of progress bar */
+}
+
+.circularProgress .progressCircle.fg {
+  stroke: $primary-color; 
+  stroke-linecap: round;
+  stroke-dasharray: 314; /* Circumference of the circle (2 * π * r) */
+  stroke-dashoffset: 314; /* Initially hidden (circle is empty) */
+  transition: stroke-dashoffset 0.5s ease; /* Smooth progress update */
+}
+
+.circularProgress .progressCircle.blink {
+  stroke: black; /* White sliding animation */
+  stroke-width: 12; /* Slightly thicker for visibility */
+  stroke-linecap: round;
+  stroke-dasharray: 50, 264; /* Short dashes for sliding */
+  stroke-dashoffset: 0;
+  animation: slidingAnimation 2s linear infinite; /* Infinite sliding animation */
+}
+
+.circularProgress .progressText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  font-weight: bold;
+  color: $primary-color; 
 }
 
 p {
-  font-size: 14px;
+  font-size: 20px;
+  color: #333;
   margin: 0;
+  font-weight: bold;
 }
+
+/* Sliding Animation */
+@keyframes slidingAnimation {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -314; /* Complete one circle */
+  }
+}
+
+.success-icon {
+  font-size: 60px;
+  color: green;
+  border: 5px solid;
+  padding: 10px 25px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+
+
+
+
+
+
