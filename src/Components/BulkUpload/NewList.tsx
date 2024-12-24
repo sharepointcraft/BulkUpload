@@ -155,12 +155,12 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
 
     if (invalidCells.length > 0) {
       const message = `
-                      <p>Invalid data found in the following cells:</p>
-                      <ul>
+                      <strong>Invalid data found in the following cells:</strong><br/>
+                      
                        ${invalidCells
                         .map((cell) => `<li>Row ${cell.row}, Column ${cell.col}: ${cell.issue}</li>`)
                         .join('')}
-                      </ul>
+                      
                     `;
         
       // alert(message);

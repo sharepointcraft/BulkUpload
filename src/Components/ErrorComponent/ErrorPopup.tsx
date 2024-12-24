@@ -19,7 +19,7 @@ const ErrorPopup: React.FC<ErrorPopupProps> = ({ isOpen, message, onClose }) => 
           X
         </button>
         <div className={`${styles['popup-icon']}`}>
-          <FontAwesomeIcon icon={faExclamationCircle} size="6x" color="red" />
+          <FontAwesomeIcon icon={faExclamationCircle} size="5x" color="red" />
         </div>
         <h3>ALERT!</h3>
         <div

@@ -15,12 +15,9 @@
     background: white;
     border-radius: 8px;
     padding: 20px;
-    min-height: 200px;
-    width: 500px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
     position: relative;
-    border: 2px solid;
   }
   
   .popup-close {
@@ -40,12 +37,12 @@
   }
   
   .popup-icon {
-    height: 95px;
-    width: 95px;
+    height:80px;
+    width: 80px;
     border-radius: 100%;
     background: white;
     position: absolute;
-    top: -25%;
+    // top: -20%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -55,12 +52,15 @@
   }
   
   h3{
-    margin-top: 50px;
-    margin-bottom: 10px;
+    margin-top: 32px;
+    margin-bottom: 5px;
+    font-size: 20px;
   }
   .popup-message {
     margin-top: 10px;
-    font-size: 15px;
+    font-size: 14px;
     color: #333;
   }
-  
+  .popup-message strong{
+    font-size: 20px;
+  }
