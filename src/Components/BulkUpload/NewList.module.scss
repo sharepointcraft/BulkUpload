@@ -2,22 +2,24 @@
 // VARIABLES
 // ------------------------------
 // Colors used throughout the design for consistency
-$primary-color: #FFC107;          // Primary button color (yellow)
-$focus-color: #0078d4;            // Focus state color for inputs (blue)
-$border-color: #ccc;              // Standard border color (light gray)
-$light-background: #f9f9f9;       // Background color for main container
-$gray-text: #6f6f6f;              // Text color for information message
-$header-bg: #f2f2f2;              // Background color for table headers
+$primary-color: #ffc107; // Primary button color (yellow)
+$focus-color: #0078d4; // Focus state color for inputs (blue)
+$border-color: #ccc; // Standard border color (light gray)
+$light-background: #f9f9f9; // Background color for main container
+$gray-text: #6f6f6f; // Text color for information message
+$header-bg: #f2f2f2; // Background color for table headers
 
 // ------------------------------
 // GLOBAL STYLES
 // ------------------------------
 
+
+
 // Reset margin and padding for all elements to avoid inconsistencies
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;   // Ensures consistent box model behavior
+  box-sizing: border-box; // Ensures consistent box model behavior
   // background-color: #2972FF;
   // background-color: #040E14;
   // background-color: #1DE9B6;
@@ -26,7 +28,7 @@ $header-bg: #f2f2f2;              // Background color for table headers
 
 // Base body styling
 body {
-  font-family: Arial, sans-serif;  // Set a basic sans-serif font for the body
+  font-family: Arial, sans-serif; // Set a basic sans-serif font for the body
   background-color: $light-background; // Set a light background color for the body
 }
 
@@ -34,78 +36,82 @@ body {
 // MAIN CONTAINER
 // ------------------------------
 .mainBox {
-  padding: 20px;               // Adds padding inside the main box
+  padding: 20px; // Adds padding inside the main box
   background-color: $light-background; // Set background to light gray
-  border: 2px solid $border-color;   // Light border around the main container
+  border: 2px solid $border-color; // Light border around the main container
 }
 
 // ------------------------------
 // INNER BOX (for title or section headers)
 // ------------------------------
 .InnerBox {
-  width: 100%;                      // Full width of the parent container
-  height: 50px;                     // Fixed height for the inner box
-  display: flex;                    // Use flexbox for alignment
-  justify-content: center;          // Center the content horizontally
-  align-items: center;              // Center the content vertically
-  margin-bottom: 20px;              // Space below the inner box
+  width: 100%; // Full width of the parent container
+  height: 50px; // Fixed height for the inner box
+  display: flex; // Use flexbox for alignment
+  justify-content: center; // Center the content horizontally
+  align-items: center; // Center the content vertically
+  margin-bottom: 20px; // Space below the inner box
 }
 
 // ------------------------------
 // HOME BUTTON
 // ------------------------------
 .homeBtn {
-  width: 100px;                     // Set a fixed width for the button container
-  display: flex;                    // Use flexbox to align button inside
-  justify-content: start;           // Align button to the start (left) of the container
+  width: 100px; // Set a fixed width for the button container
+  display: flex; // Use flexbox to align button inside
+  justify-content: start; // Align button to the start (left) of the container
 
   // Styling for the button inside homeBtn
   button {
-    width: 100%;                    // Make the button take full width of its container
-    border-radius: 5px;             // Rounded corners for the button
-    border: none;                   // Remove default button border
-    padding: 5px;                   // Add padding for better spacing inside the button
-    background-color: $primary-color; // Set button background color
-    cursor: pointer;                // Change the cursor to pointer on hover
-    font-weight: 500;                // Set font weight to bold for better visibility
+    //width: 100%; // Make the button take full width of its container
+    border-radius: 5px; // Rounded corners for the button
+    border: none; // Remove default button border
+    padding: 5px; // Add padding for better spacing inside the button
+    background-color: $light-background; // Set button background color
+    cursor: pointer; // Change the cursor to pointer on hover
+    font-weight: 500; // Set font weight to bold for better visibility
 
     // Styling for the anchor tag inside the button (if present)
     a {
-      text-decoration: none;         // Remove underline from links
-      color: black;                  // Set text color to black
-      font-weight: 500;              // Set font weight to match the button
+      text-decoration: none; // Remove underline from links
+      color: black; // Set text color to black
+      font-weight: 500; // Set font weight to match the button
     }
   }
 }
 
+.homeBtn img{
+  height: 40px;
+  width: 40px;
+}
 // ------------------------------
 // FORM GROUP (for labels and inputs)
 // ------------------------------
 .form-group {
-  margin-bottom: 10px;               // Space below each form group for separation
-  
+  margin-bottom: 10px; // Space below each form group for separation
+
   // Styling for the label in form group
   label {
-    font-weight: bold;               // Make label text bold
-    margin-bottom: 5px;              // Space between label and input
-    margin-right: 5px;               // Add right margin to create space between label and input
+    font-weight: bold; // Make label text bold
+    margin-bottom: 5px; // Space between label and input
+    margin-right: 5px; // Add right margin to create space between label and input
   }
 
   // Styling for text input fields
   input[type="text"],
   input[type="file"] {
-    width: 50%;                      // Set width of the input fields to 50% of the parent
-    padding: 5px;                    // Add padding inside the inputs for spacing
+    width: 50%; // Set width of the input fields to 50% of the parent
+    padding: 5px; // Add padding inside the inputs for spacing
     border: 1px solid $border-color; // Set border color to light gray
-    border-radius: 4px;              // Rounded corners for inputs
-    box-sizing: border-box;          // Ensures padding doesn't affect the overall width
+    border-radius: 4px; // Rounded corners for inputs
+    box-sizing: border-box; // Ensures padding doesn't affect the overall width
   }
 
   // Focus state for text and file inputs
   input[type="text"]:focus,
   input[type="file"]:focus {
-    outline: none;                  // Remove outline on focus
-    border-color: $focus-color;     // Change border color to blue on focus
+    outline: none; // Remove outline on focus
+    border-color: $focus-color; // Change border color to blue on focus
     box-shadow: 0 0 5px rgba(0, 120, 212, 0.5); // Add blue glow effect on focus
   }
 }
@@ -114,11 +120,167 @@ body {
 // UNIQUE ID COLUMN (specific column styling for the unique ID)
 // ------------------------------
 .verticalTable .uniqueID {
-  width: 50px;                      // Set a fixed width for the unique ID column to ensure it doesn't stretch
-  text-align: center;                // Center-align the unique ID text
-  font-weight: bold;                 // Make the unique ID text bold for emphasis
-  background-color: #f2f2f2;         // Light background color for the unique ID column to distinguish it
-  color: #333;                       // Set a darker color for the text in the unique ID column for contrast
+  //width: 50px; // Set a fixed width for the unique ID column to ensure it doesn't stretch
+  text-align: center; // Center-align the unique ID text
+  font-weight: bold; // Make the unique ID text bold for emphasis
+  background-color: #f2f2f2; // Light background color for the unique ID column to distinguish it
+  color: #333; // Set a darker color for the text in the unique ID column for contrast
+  width: auto;
+  align-items: center;
+}
+.verticalTable tbody .radioCenter{
+  text-align: center;
+}
+.uniqueID {
+  position: relative;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.infoIconID {
+  margin-left: 8px;
+  font-size: 10px;
+  background-color: #0078d4;
+  color: white;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  margin-top: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-style: normal;
+  position: relative;
+   
+}
+
+.infoIconID:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -260%;
+  left: 10em;
+  transform: translateX(-50%);
+  background-color: #333333e6;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+// Column types css 
+
+.columnType {
+  position: relative;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  justify-content: space-between;
+  align-items: center;
+  
+}
+.infoIconCT {
+  margin-left: 8px;
+  font-size: 10px;
+  background-color: #0078d4;
+  color: white;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-style: normal;
+  position: relative;
+  margin-top: 3px;
+  float: right;
+}
+
+.infoIconCT:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -260%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333333e6;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+//-----------------
+.uploadinfo{
+  margin-left: 8px;
+  font-size: 10px;
+  background-color: #0078d4;
+  color: white;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-style: normal;
+  position: relative;
+  font-weight: 700;
+}
+.uploadinfo:hover::after{
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -260%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333333e6;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+//---------------------
+.listinfo{
+  margin-left: 8px;
+  font-size: 10px;
+  background-color: #0078d4;
+  color: white;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-style: normal;
+  position: relative;
+  font-weight: 700;
+}
+.listinfo:hover::after{
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -260%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333333e6;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 10;
 }
 
 // ------------------------------
@@ -127,105 +289,106 @@ body {
 
 // Container for the table (handles scrolling if necessary)
 .tableContainer {
-  margin-top: 20px;                 // Add top margin to separate from other elements
-  position: relative;               // Allows positioning of child elements
-  overflow-x: auto;                 // Enable horizontal scrolling if the table is too wide
-  width: 100%;                      // Set container width to 100% for responsiveness
+  margin-top: 20px; // Add top margin to separate from other elements
+  position: relative; // Allows positioning of child elements
+  overflow-x: auto; // Enable horizontal scrolling if the table is too wide
+  width: 100%; // Set container width to 100% for responsiveness
 }
 
 // Vertical table styles
 .verticalTableWrapper {
-  margin-bottom: 20px;              // Space below vertical table
+  margin-bottom: 20px; // Space below vertical table
 }
 
 .verticalTable {
-  width: 100%;                      // Make table take full width
-  border-collapse: collapse;        // Collapse table borders into a single border
-  margin-bottom: 10px;              // Add space below the table
+  width: 100%; // Make table take full width
+  border-collapse: collapse; // Collapse table borders into a single border
+  margin-bottom: 10px; // Add space below the table
 }
 
 // Table header and cell styles
 .verticalTable th,
 .verticalTable td {
-  border: 1px solid #ddd;           // Light border for table cells
-  padding: 8px;                     // Padding inside table cells for spacing
-  text-align: left;                  // Align text to the left in cells
+  border: 1px solid #ddd; // Light border for table cells
+  padding: 8px; // Padding inside table cells for spacing
+  text-align: left; // Align text to the left in cells
+  width: auto;
 }
 
 .verticalTable th {
-  background-color: $header-bg;     // Set a light background color for table headers
+  background-color: $header-bg; // Set a light background color for table headers
+ 
 }
 
 // ------------------------------
 // DATA TABLE STYLES
 // ------------------------------
 .dataTable {
-  width: 100%;                      // Make table take full width
-  border-collapse: collapse;        // Ensure table borders are collapsed
-  margin-top: 20px;                 // Add top margin for spacing
+  width: 100%; // Make table take full width
+  border-collapse: collapse; // Ensure table borders are collapsed
+  margin-top: 20px; // Add top margin for spacing
 }
 
 // Data table cell styling
 .dataTable th,
 .dataTable td {
-  padding: 12px;                    // Add padding inside cells for better readability
-  text-align: left;                  // Align text to the left in cells
-  border: 1px solid #ddd;           // Light gray border for cells
+  padding: 12px; // Add padding inside cells for better readability
+  text-align: left; // Align text to the left in cells
+  border: 1px solid #ddd; // Light gray border for cells
 }
 
 .dataTable th {
-  background-color: #f4f4f4;        // Set light gray background for table headers
-  font-weight: bold;                 // Make header text bold
+  background-color: #f4f4f4; // Set light gray background for table headers
+  font-weight: bold; // Make header text bold
 }
 
 // Alternate row background color for better readability
 .dataTable tr:nth-child(even) {
-  background-color: #f9f9f9;        // Alternate rows have a slightly darker background
+  background-color: #f9f9f9; // Alternate rows have a slightly darker background
 }
 
 // Hover effect for rows (helps highlight row on hover)
 .dataTable tr:hover {
-  background-color: #f1f1f1;        // Change background color to light gray on hover
+  background-color: #f1f1f1; // Change background color to light gray on hover
 }
 
 // Prevent text overflow and wrap long words in table cells
 .dataTable td {
-  word-wrap: break-word;             // Ensure text wraps inside cells instead of overflowing
-  max-width: 200px;                  // Set maximum width to 200px for cells
+  word-wrap: break-word; // Ensure text wraps inside cells instead of overflowing
+  max-width: 200px; // Set maximum width to 200px for cells
 }
 
 // Caption for the table (optional title)
 .dataTable caption {
-  font-size: 1.5em;                  // Make caption text larger
-  margin-bottom: 10px;               // Add margin below the caption for separation
+  font-size: 1.5em; // Make caption text larger
+  margin-bottom: 10px; // Add margin below the caption for separation
 }
 
 // ------------------------------
 // BACK & SUBMIT BUTTONS
 // ------------------------------
 .backSubmitbtn {
-  display: flex;                     // Use flexbox to align buttons side by side
-  justify-content: space-between;    // Place buttons at opposite ends of the container
+  display: flex; // Use flexbox to align buttons side by side
+  justify-content: space-between; // Place buttons at opposite ends of the container
 }
 
 // ------------------------------
 // INFORMATION MESSAGE STYLES
 // ------------------------------
 .infomessage {
-  margin-top: 5px;                   // Add a small margin at the top
-  display: flex;                     // Use flexbox for alignment of message icon and text
-  border-radius: 4px;                // Rounded corners for message box
-  font-size: 12px;                   // Set small font size for information text
-  color: $gray-text;                 // Use gray text color
+  margin-top: 2px; // Add a small margin at the top
+  display: flex; // Use flexbox for alignment of message icon and text
+  border-radius: 4px; // Rounded corners for message box
+  font-size: 12px; // Set small font size for information text
+  color: $gray-text; // Use gray text color
 }
 
 // Information icon styling inside the message box
 .infoicon {
-  margin-right: 15px;                // Add margin to the right of the icon
-  width: 5px;                        // Set width of the icon
-  height: 5px;                       // Set height of the icon
+  margin-right: 15px; // Add margin to the right of the icon
+  width: 5px; // Set width of the icon
+  height: 5px; // Set height of the icon
 }
-
 
 /* Success Popup Styles */
 .successPopup {
