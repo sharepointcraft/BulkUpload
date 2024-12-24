@@ -3,6 +3,13 @@ import * as XLSX from "xlsx";
 import { Link } from "react-router-dom";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import styles from "../../Components/BulkUpload/NewList.module.scss";
+import {
+  Dialog,
+  DialogFooter,
+  PrimaryButton,
+  DefaultButton,
+} from "@fluentui/react";
+import ErrorPopup from "../ErrorComponent/ErrorPopup";
 
 interface INewListProps {
   context: WebPartContext;
@@ -15,12 +22,14 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
   const [uniqueId, setUniqueId] = React.useState<string | null>(null);
   const [listName, setListName] = React.useState<string>("");
   const [showTable, setShowTable] = React.useState(true); // State to control table visibility
-  const [showButtons, setShowButtons] = React.useState(false);
-  const [showSuccessPopup, setShowSuccessPopup] = React.useState(false);
-  //const [listCreationSuccess, setListCreationSuccess] = React.useState(false);
-  //const [documentLibraryCreationSuccess, setDocumentLibraryCreationSuccess] = React.useState(false);
-  const [progress, setProgress] = React.useState(0);
-  const [popupMessage, setPopupMessage] = React.useState('');
+  const [showButtons, setShowButtons] = React.useState(false); // State to control back and validate/submit visibility
+  const [showSuccessPopup, setShowSuccessPopup] = React.useState(false); // State to control progress popup
+  const [progress, setProgress] = React.useState(0); // State to control width of progesss bar
+  const [popupMessage, setPopupMessage] = React.useState(''); // State to control message in progress popup
+  const [isDialogVisible, setIsDialogVisible] = React.useState(false); // State to control confirmation popup
+  const [showSuccessIcon, setShowSuccessIcon] = React.useState(true);
+  const [isPopupOpen, setIsPopupOpen] = React.useState(false);
+  const [errorPopupMessage, setErrorPopupMessage] = React.useState('');
 
   const siteUrl =
     context.pageContext.web.absoluteUrl ||
@@ -74,11 +83,13 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       reader.readAsBinaryString(file);
     }
   };
+
   const handleColumnTypeChange = (index: number, type: string) => {
     const newColumnTypes = [...columnTypes];
     newColumnTypes[index] = type;
     setColumnTypes(newColumnTypes);
   };
+
   const handleUniqueIdChange = (index: number) => {
     setUniqueId(tableHeaders[index]);
   };
@@ -92,6 +103,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     const data = await response.json();
     return data.d.GetContextWebInformation.FormDigestValue;
   };
+
   const validateColumns = async () => {
     const invalidCells: { row: number; col: string; issue: string }[] = [];
 
@@ -137,18 +149,42 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     });
 
     if (invalidCells.length > 0) {
-      const message = `Invalid data found in the following cells:\n${invalidCells
-        .map((cell) => `Row ${cell.row}, Column ${cell.col}: ${cell.issue}`)
-        .join("\n")}`;
-      alert(message);
+      const message = `
+                      <p>Invalid data found in the following cells:</p>
+                      <ul>
+                       ${invalidCells
+                        .map((cell) => `<li>Row ${cell.row}, Column ${cell.col}: ${cell.issue}</li>`)
+                        .join('')}
+                      </ul>
+                    `;
+        
+      // alert(message);
+      setErrorPopupMessage(message);
+      setIsPopupOpen(true)
       return false; // Return false if data is invalid
     }
 
+
     return true; // Return true if all data is valid
   };
+
+  // Method for Confirmation popup Yes button
+  const handleDialogYes = () => {
+    setShowTable(!showTable);
+    setIsDialogVisible(false);
+  };
+
+  // Method for Confirmation popup No button
+  const handleDialogNo = () => {
+    setIsDialogVisible(false);
+  };
+
+
   const createSharePointList = async (): Promise<boolean> => {
     if (!listName || !uniqueId) {
-      alert("Please provide a list name and select a unique ID.");
+      //alert("Please provide a list name and select a unique ID.");
+      setErrorPopupMessage('Please provide a list name and select a unique ID.');
+      setIsPopupOpen(true);
       return false; // Return false to indicate failure
     }
 
@@ -234,7 +270,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       return true; // Return true to indicate success
     } catch (error) {
       console.error(error);
-      alert("Error creating the SharePoint list or adding data.");
+      //alert("Error creating the SharePoint list or adding data.");
       return false; // Return false if an error occurred
     }
   };
@@ -265,7 +301,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       return true;
     } catch (error) {
       console.error(error);
-      alert("Error creating the document library.");
+      //alert("Error creating the document library.");
       return false;
     }
   };
@@ -329,22 +365,62 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
   };
   return (
     <div className={styles.mainBox}>
+
       {/* Success Popup */}
       {showSuccessPopup && (
         <div className={`${styles.successPopup}`}>
           <div className={`${styles.popupContent}`}>
-            <div className={`${styles.progressBar}`}>
-              <div
-                className={`${styles.progress}`}
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-            <p>
-              {popupMessage}
-            </p>
+
+            {showSuccessIcon ? (
+              <div className={`${styles.circularProgress}`}>
+                <svg>
+                  <circle
+                    className={`${styles.progressCircle} ${styles.bg}`}
+                    cx="50%"
+                    cy="50%"
+                    r="50"
+                  ></circle>
+                  <circle
+                    className={`${styles.progressCircle} ${styles.fg}`}
+                    cx="50%"
+                    cy="50%"
+                    r="50"
+                    style={{ strokeDashoffset: 314 - (314 * progress) / 100 }}
+                  ></circle>
+                </svg>
+                <div className={`${styles.progressText}`}>{progress}%</div>
+              </div>
+            ) : (
+              <span className={`${styles["success-icon"]}`}>✔</span>
+            )}
+            <p>{popupMessage}</p>
           </div>
         </div>
       )}
+
+      {/* Error Popup */}
+      {isPopupOpen && (
+        <ErrorPopup
+          isOpen={isPopupOpen}
+          message={errorPopupMessage}
+          onClose={() => setIsPopupOpen(false)} // Close the popup
+        />
+      )}
+
+      {/* Confirmation popup after validation */}
+      <Dialog
+        hidden={!isDialogVisible}
+        onDismiss={handleDialogNo}
+        dialogContentProps={{
+          title: "Confirmation",
+          subText: "Do you want to display the data table?",
+        }}
+      >
+        <DialogFooter>
+          <PrimaryButton onClick={handleDialogYes} text="Yes" />
+          <DefaultButton onClick={handleDialogNo} text="No" />
+        </DialogFooter>
+      </Dialog>
 
       {/* Home Button */}
       <div className={`${styles.homeBtn}`}>
@@ -358,20 +434,18 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
         <h1>Bulk Upload</h1>
       </div>
 
-      {/* Form Group for list name */}
-      <div className={styles["form-group"]}>
-        <label htmlFor="listName">List Name:</label>
-        <input
-          type="text"
-          id="listName"
-          placeholder="Enter list name"
-          value={listName}
-          onChange={(e) => setListName(e.target.value)}
-        />
-      </div>
-
-      {/* Form Group for file upload */}
-      {showTable && (
+      {!showTable ? (
+        <div className={styles["form-group"]}>
+          <label htmlFor="listName">List Name:</label>
+          <input
+            type="text"
+            id="listName"
+            placeholder="Enter list name"
+            value={listName}
+            onChange={(e) => setListName(e.target.value)}
+          />
+        </div>
+      ) : (
         <div className={styles["form-group"]}>
           <label htmlFor="fileUpload">Upload File:</label>
           <input
@@ -499,9 +573,9 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
               onClick={async () => {
                 const isValid = await validateColumns();
                 if (isValid) {
-                  setShowTable(!showTable);
+                  setIsDialogVisible(true);
                 } else {
-                  alert("Validation failed. Please correct the data.");
+                  //alert("Validation failed. Please correct the data.");
                 }
               }}
             >
@@ -513,30 +587,33 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
                 try {
                   // Step 1: Create SharePoint List
                   setPopupMessage('Creating SharePoint list...');
-                  setProgress(33.33);
+                  setProgress(35);
                   setShowSuccessPopup(true);
 
                   const isListCreationSuccess = await createSharePointList();
                   if (!isListCreationSuccess) {
-                    setPopupMessage('Failed to create SharePoint list.');
-                    await new Promise((resolve) => setTimeout(resolve, 3000)); // Show for 3 seconds
+                    //setProgress(0);
+                    //setPopupMessage('Failed to create SharePoint list.');
+                    //await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
                     setShowSuccessPopup(false);
+                    setErrorPopupMessage('Failed to create SharePoint list.');
+                    setIsPopupOpen(true);
                     return; // Stop the process
                   }
-                  await new Promise((resolve) => setTimeout(resolve, 3000)); // Show for 3 seconds
+                  await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
 
                   // Step 2: Create Document Library
                   setPopupMessage('Creating document library...');
-                  setProgress(66.66);
+                  setProgress(70);
 
                   const isLibraryCreationSuccess = await createDocumentLibrary();
                   if (!isLibraryCreationSuccess) {
-                    setPopupMessage('Failed to create document library.');
-                    await new Promise((resolve) => setTimeout(resolve, 3000)); // Show for 3 seconds
                     setShowSuccessPopup(false);
+                    setErrorPopupMessage('Failed to create document library.');
+                    setIsPopupOpen(true);
                     return; // Stop the process
                   }
-                  await new Promise((resolve) => setTimeout(resolve, 3000)); // Show for 3 seconds
+                  await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
 
                   // Step 3: Add Data to List
                   setPopupMessage('Submitting data...');
@@ -544,24 +621,24 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
 
                   const isDataSubmissionSuccess = await addDatatoList();
                   if (!isDataSubmissionSuccess) {
-                    setPopupMessage('Failed to submit data.');
-                    await new Promise((resolve) => setTimeout(resolve, 3000)); // Show for 3 seconds
                     setShowSuccessPopup(false);
+                    setErrorPopupMessage('Failed to submit data.');
+                    setIsPopupOpen(true);
                     return; // Stop the process
                   }
-                  await new Promise((resolve) => setTimeout(resolve, 3000)); // Show for 3 seconds
+                  await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
 
 
                   setPopupMessage('Data successfully submitted.');
-                  await new Promise((resolve) => setTimeout(resolve, 3000)); // Show for 3 seconds
+                  setShowSuccessIcon(false); // Show the success icon
+                  await new Promise((resolve) => setTimeout(resolve, 2000)); // Show for 3 seconds
 
                   // Hide popup after completion
                   setShowSuccessPopup(false);
                   setShowTable(false);
                 } catch (error) {
-                  setPopupMessage(error.message || 'An unexpected error occurred.');
-                  await new Promise((resolve) => setTimeout(resolve, 3000)); // Show for 3 seconds
-                  setShowSuccessPopup(false);
+                  setErrorPopupMessage(`An unexpected error occurred. ${error.message} `);
+                  setIsPopupOpen(true);
                 }
               }}
             >
