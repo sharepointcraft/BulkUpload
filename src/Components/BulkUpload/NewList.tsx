@@ -244,7 +244,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
 
       const libraryPayload = {
         __metadata: { type: "SP.List" },
-        Title: `${listName}_Documents`,
+        Title: `${listName}`,
         BaseTemplate: 101, // Document Library
       };
 
@@ -331,7 +331,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     <div className={styles.mainBox}>
       {/* Success Popup */}
       {showSuccessPopup && (
-        <div className={`${styles.successPopup}`}>
+        <div className={styles.successPopup}>
           <div className={`${styles.popupContent}`}>
             <div className={`${styles.progressBar}`}>
               <div

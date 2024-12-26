@@ -5,20 +5,20 @@ import "@pnp/sp/lists";
 import "@pnp/sp/webs";
 import "@pnp/sp/fields";
 import styles from "../../Components/BulkUpload/ExistingList.module.scss";
-import * as XLSX from "xlsx"; // For parsing Excel and CSV files
+import * as XLSX from "xlsx";
 
 const ExistingList: React.FC = () => {
-  const [lists, setLists] = useState<any[]>([]); // State to store the lists
-  const [selectedList, setSelectedList] = useState<string>(""); // Selected list ID
-  const [listColumns, setListColumns] = useState<string[]>([]); // Columns of the selected list
-  const [fileData, setFileData] = useState<any[]>([]); // Uploaded file data
-  const [] = useState<string[]>([]); // Headers from the uploaded file
-  const [showPopup, setShowPopup] = useState<boolean>(false); // Popup state
+  const [lists, setLists] = useState<any[]>([]);
+  const [selectedList, setSelectedList] = useState<string>("");
+  const [listColumns, setListColumns] = useState<string[]>([]);
+  const [fileData, setFileData] = useState<any[]>([]);
+  const [attachments, setAttachments] = useState<{ [index: number]: File | null }>({});
+  const [showPopup, setShowPopup] = useState<boolean>(false);
 
-  // Fetch all lists when the component mounts
+  // Fetch all lists on mount
   useEffect(() => {
     sp.web.lists
-      .filter("BaseTemplate eq 100") // Fetch only custom lists
+      .filter("BaseTemplate eq 100")
       .get()
       .then((listData) => {
         const filteredLists = listData.map((list) => ({
@@ -29,12 +29,12 @@ const ExistingList: React.FC = () => {
       });
   }, []);
 
-  // Fetch columns of the selected list when it changes
+  // Fetch columns of the selected list
   useEffect(() => {
     if (selectedList) {
       sp.web.lists
         .getById(selectedList)
-        .fields.filter("Hidden eq false and ReadOnlyField eq false") // Exclude hidden and read-only fields
+        .fields.filter("Hidden eq false and ReadOnlyField eq false")
         .get()
         .then((fields) => {
           const columnNames = fields.map((field) => field.Title);
@@ -47,36 +47,68 @@ const ExistingList: React.FC = () => {
 
   const handleDropdownChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedList(event.target.value);
+    setFileData([]);
+    setAttachments({});
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-  
+
       reader.onload = (e) => {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: "array" });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-  
-        // Get headers from the first row
+        const jsonData = XLSX.utils.sheet_to_json<any>(worksheet, { header: 1 });
+
+        // Validate headers
         const headers = jsonData[0] as string[];
-  
-        // Validate file headers with list columns
-        const isValid = headers.every((header) => listColumns.includes(header)); // Check if headers exist in listColumns
+        const isValid = headers.every((header) => listColumns.includes(header));
+
         if (!isValid) {
-          setShowPopup(true); // Show popup if validation fails
+          setShowPopup(true);
+          setFileData([]);
         } else {
-          setFileData(jsonData);
+          setShowPopup(false);
+          const formattedData = jsonData.slice(1).map((row) => {
+            const rowObject: any = {};
+            headers.forEach((header, index) => {
+              rowObject[header] = row[index];
+            });
+            return rowObject;
+          });
+          setFileData(formattedData);
         }
       };
-  
+
       reader.readAsArrayBuffer(file);
     }
   };
-  
+
+  const handleAttachmentUpload = (rowIndex: number) => {
+    const attachmentInput = document.createElement("input");
+    attachmentInput.type = "file";
+    attachmentInput.accept = ".xlsx, .csv, .pdf, .docx";
+    attachmentInput.onchange = (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file) {
+        setAttachments((prevAttachments) => ({
+          ...prevAttachments,
+          [rowIndex]: file,
+        }));
+      }
+    };
+    attachmentInput.click();
+  };
+
+  const handleAttachmentCancel = (rowIndex: number) => {
+    setAttachments((prevAttachments) => ({
+      ...prevAttachments,
+      [rowIndex]: null,
+    }));
+  };
 
   const closePopup = () => {
     setShowPopup(false);
@@ -100,7 +132,7 @@ const ExistingList: React.FC = () => {
 
       {selectedList && (
         <div className={styles.fileuploadcontainer}>
-          <h2>Upload File (.xlsx or .csv)</h2>
+          <h2>Upload File</h2>
           <input
             type="file"
             accept=".xlsx, .csv"
@@ -116,16 +148,37 @@ const ExistingList: React.FC = () => {
           <table className={styles.datatable}>
             <thead>
               <tr>
-                {fileData[0].map((header: string, index: number) => (
+                <th>Attachment</th>
+                {Object.keys(fileData[0]).map((header, index) => (
                   <th key={index}>{header}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {fileData.slice(1).map((row: any[], rowIndex: number) => (
+              {fileData.map((row, rowIndex) => (
                 <tr key={rowIndex}>
-                  {row.map((cell: any, cellIndex: number) => (
-                    <td key={cellIndex}>{cell}</td>
+                  <td>
+                    {attachments[rowIndex] ? (
+                      <div className={styles.attachmentInfo}>
+                        <span>{attachments[rowIndex]?.name}</span>
+                        <button
+                          className={styles.cancelButton}
+                          onClick={() => handleAttachmentCancel(rowIndex)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className={styles.attachmentButton}
+                        onClick={() => handleAttachmentUpload(rowIndex)}
+                      >
+                        Attach
+                      </button>
+                    )}
+                  </td>
+                  {Object.keys(row).map((key, cellIndex) => (
+                    <td key={cellIndex}>{row[key]}</td>
                   ))}
                 </tr>
               ))}
@@ -138,7 +191,10 @@ const ExistingList: React.FC = () => {
         <div className={styles.popup}>
           <div className={styles.popupContent}>
             <h2>Validation Error</h2>
-            <p>The uploaded file's columns do not match the selected list's columns. Please check and try again.</p>
+            <p>
+              The uploaded file's columns do not match the selected list's
+              columns. Please check and try again.
+            </p>
             <button onClick={closePopup}>Close</button>
           </div>
         </div>
