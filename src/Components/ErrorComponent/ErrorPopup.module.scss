@@ -42,7 +42,7 @@
     border-radius: 100%;
     background: white;
     position: absolute;
-    // top: -20%;
+    top: -16%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -63,4 +63,21 @@
   }
   .popup-message strong{
     font-size: 20px;
+  }
+
+  .popup-message li{
+    font-family: Arial, sans-serif; // Set a basic sans-serif font for the body
+  }
+
+  .popup-message button{
+    margin-top: 6px;
+    margin-left: 300px;
+    border-radius: 5px;
+    border: none;
+    padding: 5px;
+    background-color: #ffc107;
+    cursor: pointer!important;
+    font-weight: 500;
+    width: 82px;
+    color: black;
   }
