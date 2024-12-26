@@ -155,17 +155,51 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
 
     if (invalidCells.length > 0) {
       const message = `
-                      <strong>Invalid data found in the following cells:</strong><br/>
+                        <strong>Invalid data found in the following cells:</strong><br/>
                       
-                       ${invalidCells
-                        .map((cell) => `<li>Row ${cell.row}, Column ${cell.col}: ${cell.issue}</li>`)
-                        .join('')}
-                      
-                    `;
-        
+                         ${invalidCells.slice(0, 5)
+          .map((cell) => `<li>Row ${cell.row}, Column ${cell.col}: ${cell.issue}</li>`)
+          .join('')}
+                        ${invalidCells.length > 5 ? '<button id="moreErrorsButton">More Errors</button>' : ''}
+                      `;
+
       // alert(message);
       setErrorPopupMessage(message);
       setIsPopupOpen(true)
+
+      // Generate the message for the new tab
+      const allErrorsMessage = `
+                                <strong>All Errors:</strong><br/>
+                                <ul>
+                                ${invalidCells
+          .map((cell) => `<li>Row ${cell.row}, Column ${cell.col}: ${cell.issue}</li>`)
+          .join('')}
+                                </ul>
+                              `;
+
+      // Add an event listener for the "More Errors" button
+      setTimeout(() => {
+        const moreErrorsButton = document.getElementById('moreErrorsButton');
+        if (moreErrorsButton) {
+          moreErrorsButton.addEventListener('click', () => {
+            const newTab = window.open('', '_blank');
+            if (newTab) {
+              newTab.document.write(`
+          <html>
+            <head>
+              <title>All Errors</title>
+            </head>
+            <body>
+              ${allErrorsMessage}
+            </body>
+          </html>
+        `);
+              newTab.document.close();
+            }
+          });
+        }
+      }, 0);
+
       return false; // Return false if data is invalid
     }
 
@@ -310,7 +344,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       return false;
     }
   };
-  const addDatatoList = async (): Promise<boolean> => {
+  const addDataToList = async (): Promise<boolean> => {
     const requestDigest = await getRequestDigest(); // Fetch digest dynamically
     let allDataAddedSuccessfully = true; // Flag to track overall success
 
@@ -321,10 +355,11 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       return Number(value);
     };
 
-    // Now add data to the list
+    // Iterate over each row of data
     for (const row of tableData) {
       const itemPayload: Record<string, any> = {};
 
+      // Map headers and cell values to payload
       tableHeaders.forEach((header, index) => {
         const internalColumnName = header
           .replace(/\s+/g, "_x0020_") // Replace spaces with _x0020_
@@ -332,13 +367,13 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
         const cellValue = row[index]; // Get the cell value
         if (columnTypes[index] === "Currency") {
           const numericValue = parseCurrency(cellValue);
-
           itemPayload[internalColumnName] = numericValue;
         } else {
           itemPayload[internalColumnName] = cellValue; // Map each header to its corresponding cell value
         }
       });
 
+      // Try to add data to the list
       try {
         const response = await fetch(
           `${siteUrl}/_api/web/lists/getbytitle('${listName}')/items`,
@@ -358,17 +393,16 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
         if (!response.ok) {
           throw new Error(`Error adding item to list: ${response.statusText}`);
         }
-        return true;
       } catch (error) {
         console.error("Failed to add data to list:", error);
         allDataAddedSuccessfully = false; // Mark failure
-        return false;
       }
     }
 
-    // Return true if all items were added successfully, otherwise return false
+    // Return true if all items were added successfully, otherwise false
     return allDataAddedSuccessfully;
   };
+
   return (
     <div className={styles.mainBox}>
 
@@ -432,9 +466,9 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       <div className={`${styles.homeBtn}`}>
         <button>
           <Link to="/"> <img
-              src={require("../../../src/webparts/bulkUpload/assets/Homeicon.png")}
-              alt="Bulk-Upload-home-icon Image"
-            /></Link>
+            src={require("../../../src/webparts/bulkUpload/assets/Homeicon.png")}
+            alt="Bulk-Upload-home-icon Image"
+          /></Link>
         </button>
       </div>
 
@@ -488,7 +522,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
 
                     <th>
                       Column Names
-                  
+
                     </th>
                     <th className={styles.columnType}>
                       Column Type
@@ -664,7 +698,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
                   setPopupMessage('Submitting data...');
                   setProgress(100);
 
-                  const isDataSubmissionSuccess = await addDatatoList();
+                  const isDataSubmissionSuccess = await addDataToList();
                   if (!isDataSubmissionSuccess) {
                     setShowSuccessPopup(false);
                     setErrorPopupMessage('Failed to submit data.');
