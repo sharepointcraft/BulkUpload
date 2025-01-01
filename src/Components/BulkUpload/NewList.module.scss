@@ -55,9 +55,9 @@ body {
 // HOME BUTTON
 // ------------------------------
 .homeBtn {
-  width: 100px;
+  width: 100%;
   display: flex;
-  justify-content: start;
+  justify-content: space-between;
 
   // Styling for the button inside homeBtn
   button {

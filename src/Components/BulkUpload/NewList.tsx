@@ -25,18 +25,16 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
   const [showButtons, setShowButtons] = React.useState(false); // State to control back and validate/submit visibility
   const [showSuccessPopup, setShowSuccessPopup] = React.useState(false); // State to control progress popup
   const [progress, setProgress] = React.useState(0); // State to control width of progesss bar
-  const [popupMessage, setPopupMessage] = React.useState(''); // State to control message in progress popup
+  const [popupMessage, setPopupMessage] = React.useState(""); // State to control message in progress popup
   const [isDialogVisible, setIsDialogVisible] = React.useState(false); // State to control confirmation popup
   const [showSuccessIcon, setShowSuccessIcon] = React.useState(true);
   const [isPopupOpen, setIsPopupOpen] = React.useState(false);
-  const [errorPopupMessage, setErrorPopupMessage] = React.useState('');
+  const [errorPopupMessage, setErrorPopupMessage] = React.useState("");
   const [createDocLib, setCreateDocLib] = React.useState("no");
-
 
   const siteUrl =
     context.pageContext.web.absoluteUrl ||
     "https://realitycraftprivatelimited.sharepoint.com/sites/BulkUpload";
-
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUniqueId(""); // Reset the unique ID
@@ -160,32 +158,43 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       const message = `
                         <strong>Invalid data found in the following cells:</strong><br/>
                       
-                         ${invalidCells.slice(0, 5)
-          .map((cell) => `<li>Row ${cell.row}, Column ${cell.col}: ${cell.issue}</li>`)
-          .join('')}
-                        ${invalidCells.length > 5 ? '<button id="moreErrorsButton">More Errors</button>' : ''}
+                         ${invalidCells
+                           .slice(0, 5)
+                           .map(
+                             (cell) =>
+                               `<li>Row ${cell.row}, Column ${cell.col}: ${cell.issue}</li>`
+                           )
+                           .join("")}
+                        ${
+                          invalidCells.length > 5
+                            ? '<button id="moreErrorsButton">More Errors</button>'
+                            : ""
+                        }
                       `;
 
       // alert(message);
       setErrorPopupMessage(message);
-      setIsPopupOpen(true)
+      setIsPopupOpen(true);
 
       // Generate the message for the new tab
       const allErrorsMessage = `
                                 <strong>All Errors:</strong><br/>
                                 <ul>
                                 ${invalidCells
-          .map((cell) => `<li>Row ${cell.row}, Column ${cell.col}: ${cell.issue}</li>`)
-          .join('')}
+                                  .map(
+                                    (cell) =>
+                                      `<li>Row ${cell.row}, Column ${cell.col}: ${cell.issue}</li>`
+                                  )
+                                  .join("")}
                                 </ul>
                               `;
 
       // Add an event listener for the "More Errors" button
       setTimeout(() => {
-        const moreErrorsButton = document.getElementById('moreErrorsButton');
+        const moreErrorsButton = document.getElementById("moreErrorsButton");
         if (moreErrorsButton) {
-          moreErrorsButton.addEventListener('click', () => {
-            const newTab = window.open('', '_blank');
+          moreErrorsButton.addEventListener("click", () => {
+            const newTab = window.open("", "_blank");
             if (newTab) {
               newTab.document.write(`
           <html>
@@ -206,7 +215,6 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       return false; // Return false if data is invalid
     }
 
-
     return true; // Return true if all data is valid
   };
 
@@ -221,11 +229,12 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     setIsDialogVisible(false);
   };
 
-
   const createSharePointList = async (): Promise<boolean> => {
     if (!listName || !uniqueId) {
       //alert("Please provide a list name and select a unique ID.");
-      setErrorPopupMessage('Please provide a list name and select a unique ID.');
+      setErrorPopupMessage(
+        "Please provide a list name and select a unique ID."
+      );
       setIsPopupOpen(true);
       return false; // Return false to indicate failure
     }
@@ -349,8 +358,6 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     }
   };
 
-
-
   const addDataToList = async (): Promise<boolean> => {
     const requestDigest = await getRequestDigest(); // Fetch digest dynamically
     let allDataAddedSuccessfully = true; // Flag to track overall success
@@ -409,15 +416,37 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     // Return true if all items were added successfully, otherwise false
     return allDataAddedSuccessfully;
   };
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
+  const resetForm = () => {
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    // Reset state variables
+    setTableData([]);
+    setTableHeaders([]);
+    setColumnTypes([]);
+    setUniqueId(null);
+    setListName("");
+    setShowButtons(false);
+  };
+
+  
   return (
     <div className={styles.mainBox}>
-
       {/* Success Popup */}
       {showSuccessPopup && (
         <div className={`${styles.successPopup}`}>
-          <div className={`${styles.popupContent}`} style={{ borderColor: showSuccessPopup ? 'yellow' : 'green', borderWidth: '2px', borderStyle: 'solid', }}>
-
+          <div
+            className={`${styles.popupContent}`}
+            style={{
+              borderColor: showSuccessPopup ? "yellow" : "green",
+              borderWidth: "2px",
+              borderStyle: "solid",
+            }}
+          >
             {showSuccessIcon ? (
               <div className={`${styles.circularProgress}`}>
                 <div className={`${styles.loadingSpinner}`}></div>
@@ -458,10 +487,19 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       {/* Home Button */}
       <div className={`${styles.homeBtn}`}>
         <button>
-          <Link to="/"> <img
-            src={require("../../../src/webparts/bulkUpload/assets/Homeicon.png")}
-            alt="Bulk-Upload-home-icon Image"
-          /></Link>
+          <Link to="/">
+            {" "}
+            <img
+              src={require("../../../src/webparts/bulkUpload/assets/Homeicon.png")}
+              alt="Bulk-Upload-home-icon Image"
+            />
+          </Link>
+        </button>
+        <button onClick={resetForm}>
+          <img
+            src={require("../../../src/webparts/bulkUpload/assets/circular.png")}
+            alt="Bulk-Upload-Reset-home-icon Image"
+          />
         </button>
       </div>
 
@@ -514,12 +552,17 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
             id="fileUpload"
             accept=".xlsx, .xls, .csv"
             onChange={handleFileUpload}
+            ref={fileInputRef} // Attach the ref here
           />
-          <i className={styles.uploadinfo} data-tooltip="Excel Columns should be in first Line">i</i>
+          <i
+            className={styles.uploadinfo}
+            data-tooltip="Excel Columns should be in first Line"
+          >
+            i
+          </i>
         </div>
       )}
 
-       
       {/* Table Display */}
       {tableData.length > 0 && (
         <div className={styles.tableContainer}>
@@ -539,10 +582,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
                       </i>
                     </th>
 
-                    <th>
-                      Column Names
-
-                    </th>
+                    <th>Column Names</th>
                     <th className={styles.columnType}>
                       Column Type
                       <i
@@ -664,105 +704,106 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       )}
 
       {/* Back and Submit Buttons */}
-      {showButtons && <div className={`${styles.backSubmitbtn}`}>
-        <div className={`${styles.backBtn}`}>
-          <button>
-            <Link to="/selectlisttype">Back</Link>
-          </button>
-        </div>
-        <div className={`${styles.validateBtn}`}>
-          {showTable ? (
-            <button
-              onClick={async () => {
-                const isValid = await validateColumns();
-                if (isValid) {
-                  setIsDialogVisible(true);
-                } else {
-                  //alert("Validation failed. Please correct the data.");
-                }
-              }}
-            >
-              Validate
+      {showButtons && (
+        <div className={`${styles.backSubmitbtn}`}>
+          <div className={`${styles.backBtn}`}>
+            <button>
+              <Link to="/selectlisttype">Back</Link>
             </button>
-          ) : (
-            <button
-              onClick={async () => {
-                try {
-                  // Step 1: Create SharePoint List
-                  setPopupMessage('Creating SharePoint list...');
-                  if (createDocLib === "yes") {
-                    setProgress(35);
+          </div>
+          <div className={`${styles.validateBtn}`}>
+            {showTable ? (
+              <button
+                onClick={async () => {
+                  const isValid = await validateColumns();
+                  if (isValid) {
+                    setIsDialogVisible(true);
                   } else {
-                    setProgress(50);
+                    //alert("Validation failed. Please correct the data.");
                   }
+                }}
+              >
+                Validate
+              </button>
+            ) : (
+              <button
+                onClick={async () => {
+                  try {
+                    // Step 1: Create SharePoint List
+                    setPopupMessage("Creating SharePoint list...");
+                    if (createDocLib === "yes") {
+                      setProgress(35);
+                    } else {
+                      setProgress(50);
+                    }
 
-                  setShowSuccessPopup(true);
+                    setShowSuccessPopup(true);
 
-                  const isListCreationSuccess = await createSharePointList();
-                  if (!isListCreationSuccess) {
-                    //setProgress(0);
-                    //setPopupMessage('Failed to create SharePoint list.');
-                    //await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
-                    setShowSuccessPopup(false);
-                    setErrorPopupMessage('Failed to create SharePoint list.');
-                    setIsPopupOpen(true);
-                    return; // Stop the process
-                  }
-                  await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
-
-
-
-                  if (createDocLib === "yes") {
-                    // Step 2: Create Document Library
-                    setPopupMessage('Creating document library...');
-                    setProgress(70);
-
-                    const isLibraryCreationSuccess = await createDocumentLibrary();
-                    if (!isLibraryCreationSuccess) {
+                    const isListCreationSuccess = await createSharePointList();
+                    if (!isListCreationSuccess) {
+                      //setProgress(0);
+                      //setPopupMessage('Failed to create SharePoint list.');
+                      //await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
                       setShowSuccessPopup(false);
-                      setErrorPopupMessage('Failed to create document library.');
+                      setErrorPopupMessage("Failed to create SharePoint list.");
                       setIsPopupOpen(true);
                       return; // Stop the process
                     }
-                  }
+                    await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
 
-                  await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
+                    if (createDocLib === "yes") {
+                      // Step 2: Create Document Library
+                      setPopupMessage("Creating document library...");
+                      setProgress(70);
 
-                  // Step 3: Add Data to List
-                  setPopupMessage('Submitting data...');
-                  setProgress(100);
+                      const isLibraryCreationSuccess =
+                        await createDocumentLibrary();
+                      if (!isLibraryCreationSuccess) {
+                        setShowSuccessPopup(false);
+                        setErrorPopupMessage(
+                          "Failed to create document library."
+                        );
+                        setIsPopupOpen(true);
+                        return; // Stop the process
+                      }
+                    }
 
-                  const isDataSubmissionSuccess = await addDataToList();
-                  if (!isDataSubmissionSuccess) {
+                    await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
+
+                    // Step 3: Add Data to List
+                    setPopupMessage("Submitting data...");
+                    setProgress(100);
+
+                    const isDataSubmissionSuccess = await addDataToList();
+                    if (!isDataSubmissionSuccess) {
+                      setShowSuccessPopup(false);
+                      setErrorPopupMessage("Failed to submit data.");
+                      setIsPopupOpen(true);
+                      return; // Stop the process
+                    }
+                    await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
+
+                    setPopupMessage("Data successfully submitted.");
+                    setShowSuccessIcon(false); // Show the success icon
+                    await new Promise((resolve) => setTimeout(resolve, 2000)); // Show for 3 seconds
+
+                    // Hide popup after completion
                     setShowSuccessPopup(false);
-                    setErrorPopupMessage('Failed to submit data.');
+                    setShowTable(false);
+                  } catch (error) {
+                    setErrorPopupMessage(
+                      `An unexpected error occurred. ${error.message} `
+                    );
                     setIsPopupOpen(true);
-                    return; // Stop the process
                   }
-                  await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
-
-
-                  setPopupMessage('Data successfully submitted.');
-                  setShowSuccessIcon(false); // Show the success icon
-                  await new Promise((resolve) => setTimeout(resolve, 2000)); // Show for 3 seconds
-
-                  // Hide popup after completion
-                  setShowSuccessPopup(false);
-                  setShowTable(false);
-                  
-                } catch (error) {
-                  setErrorPopupMessage(`An unexpected error occurred. ${error.message} `);
-                  setIsPopupOpen(true);
-                }
-              }}
-            >
-              Submit
-            </button>
-
-          )}
+                }}
+              >
+                Submit
+              </button>
+            )}
+          </div>
         </div>
-      </div>
-      }
+      )}
     </div>
   );
 };
