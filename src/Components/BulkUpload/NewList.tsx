@@ -30,10 +30,13 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
   const [showSuccessIcon, setShowSuccessIcon] = React.useState(true);
   const [isPopupOpen, setIsPopupOpen] = React.useState(false);
   const [errorPopupMessage, setErrorPopupMessage] = React.useState('');
+  const [createDocLib, setCreateDocLib] = React.useState("no");
+
 
   const siteUrl =
     context.pageContext.web.absoluteUrl ||
     "https://realitycraftprivatelimited.sharepoint.com/sites/BulkUpload";
+
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUniqueId(""); // Reset the unique ID
@@ -313,6 +316,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       return false; // Return false if an error occurred
     }
   };
+
   const createDocumentLibrary = async (): Promise<boolean> => {
     try {
       const requestDigest = await getRequestDigest(); // Fetch digest dynamically
@@ -344,6 +348,9 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       return false;
     }
   };
+
+
+
   const addDataToList = async (): Promise<boolean> => {
     const requestDigest = await getRequestDigest(); // Fetch digest dynamically
     let allDataAddedSuccessfully = true; // Flag to track overall success
@@ -409,25 +416,11 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       {/* Success Popup */}
       {showSuccessPopup && (
         <div className={`${styles.successPopup}`}>
-          <div className={`${styles.popupContent}`}>
+          <div className={`${styles.popupContent}`} style={{ borderColor: showSuccessPopup ? 'yellow' : 'green', borderWidth: '2px', borderStyle: 'solid', }}>
 
             {showSuccessIcon ? (
               <div className={`${styles.circularProgress}`}>
-                <svg>
-                  <circle
-                    className={`${styles.progressCircle} ${styles.bg}`}
-                    cx="50%"
-                    cy="50%"
-                    r="50"
-                  ></circle>
-                  <circle
-                    className={`${styles.progressCircle} ${styles.fg}`}
-                    cx="50%"
-                    cy="50%"
-                    r="50"
-                    style={{ strokeDashoffset: 314 - (314 * progress) / 100 }}
-                  ></circle>
-                </svg>
+                <div className={`${styles.loadingSpinner}`}></div>
                 <div className={`${styles.progressText}`}>{progress}%</div>
               </div>
             ) : (
@@ -487,6 +480,31 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
             value={listName}
             onChange={(e) => setListName(e.target.value)}
           />
+          <div className={styles["radio-group"]}>
+            <label>Do you want to create a document library?</label>
+            <div>
+              <input
+                type="radio"
+                id="createDocLibYes"
+                name="createDocLib"
+                value="yes"
+                checked={createDocLib === "yes"}
+                onChange={(e) => setCreateDocLib(e.target.value)}
+              />
+              <label htmlFor="createDocLibYes">Yes</label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                id="createDocLibNo"
+                name="createDocLib"
+                value="no"
+                checked={createDocLib === "no"}
+                onChange={(e) => setCreateDocLib(e.target.value)}
+              />
+              <label htmlFor="createDocLibNo">No</label>
+            </div>
+          </div>
         </div>
       ) : (
         <div className={styles["form-group"]}>
@@ -501,6 +519,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
         </div>
       )}
 
+       
       {/* Table Display */}
       {tableData.length > 0 && (
         <div className={styles.tableContainer}>
@@ -616,9 +635,11 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
               <table className={styles.dataTable}>
                 <thead>
                   <tr>
-                    {tableHeaders.concat("Attachment").map((header, index) => (
+                    {tableHeaders.map((header, index) => (
                       <th key={index}>{header}</th>
                     ))}
+                    {/* Conditionally render the 'Attachment' header based on radio selection */}
+                    {createDocLib === "yes" && <th>Attachment</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -627,9 +648,12 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
                       {row.map((cell, cellIndex) => (
                         <td key={cellIndex}>{cell}</td>
                       ))}
-                      <td key="attachment">
-                        <input type="file" />
-                      </td>
+                      {/* Conditionally render the 'Attachment' column based on radio selection */}
+                      {createDocLib === "yes" && (
+                        <td>
+                          <input type="file" />
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -666,7 +690,12 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
                 try {
                   // Step 1: Create SharePoint List
                   setPopupMessage('Creating SharePoint list...');
-                  setProgress(35);
+                  if (createDocLib === "yes") {
+                    setProgress(35);
+                  } else {
+                    setProgress(50);
+                  }
+
                   setShowSuccessPopup(true);
 
                   const isListCreationSuccess = await createSharePointList();
@@ -681,17 +710,22 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
                   }
                   await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
 
-                  // Step 2: Create Document Library
-                  setPopupMessage('Creating document library...');
-                  setProgress(70);
 
-                  const isLibraryCreationSuccess = await createDocumentLibrary();
-                  if (!isLibraryCreationSuccess) {
-                    setShowSuccessPopup(false);
-                    setErrorPopupMessage('Failed to create document library.');
-                    setIsPopupOpen(true);
-                    return; // Stop the process
+
+                  if (createDocLib === "yes") {
+                    // Step 2: Create Document Library
+                    setPopupMessage('Creating document library...');
+                    setProgress(70);
+
+                    const isLibraryCreationSuccess = await createDocumentLibrary();
+                    if (!isLibraryCreationSuccess) {
+                      setShowSuccessPopup(false);
+                      setErrorPopupMessage('Failed to create document library.');
+                      setIsPopupOpen(true);
+                      return; // Stop the process
+                    }
                   }
+
                   await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
 
                   // Step 3: Add Data to List
@@ -715,6 +749,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
                   // Hide popup after completion
                   setShowSuccessPopup(false);
                   setShowTable(false);
+                  
                 } catch (error) {
                   setErrorPopupMessage(`An unexpected error occurred. ${error.message} `);
                   setIsPopupOpen(true);
