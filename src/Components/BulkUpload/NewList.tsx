@@ -3,6 +3,9 @@ import * as XLSX from "xlsx";
 import { Link } from "react-router-dom";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import styles from "../../Components/BulkUpload/NewList.module.scss";
+import SuccessPopUp from "../SuccessPopUp/SuccessPopUp";
+import TableSection from "../TableSection/TableSection"; // Adjust the import path
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogFooter,
@@ -10,6 +13,7 @@ import {
   DefaultButton,
 } from "@fluentui/react";
 import ErrorPopup from "../ErrorComponent/ErrorPopup";
+import BackSubmitButtons from "../Back_SubmitButton/BackSubmitButton";
 
 interface INewListProps {
   context: WebPartContext;
@@ -24,7 +28,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
   const [showTable, setShowTable] = React.useState(true); // State to control table visibility
   const [showButtons, setShowButtons] = React.useState(false); // State to control back and validate/submit visibility
   const [showSuccessPopup, setShowSuccessPopup] = React.useState(false); // State to control progress popup
-  const [progress, setProgress] = React.useState(0); // State to control width of progesss bar
+  // const [progress, setProgress] = React.useState(0); // State to control width of progesss bar
   const [popupMessage, setPopupMessage] = React.useState(""); // State to control message in progress popup
   const [isDialogVisible, setIsDialogVisible] = React.useState(false); // State to control confirmation popup
   const [showSuccessIcon, setShowSuccessIcon] = React.useState(true);
@@ -416,6 +420,8 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     // Return true if all items were added successfully, otherwise false
     return allDataAddedSuccessfully;
   };
+  const navigate = useNavigate(); // React Router hook for navigation
+
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const resetForm = () => {
@@ -431,33 +437,23 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     setUniqueId(null);
     setListName("");
     setShowButtons(false);
+    setShowTable(true);
+
+    // Navigate to the upload page
+    navigate("/newlist");
   };
 
-  
   return (
     <div className={styles.mainBox}>
       {/* Success Popup */}
       {showSuccessPopup && (
-        <div className={`${styles.successPopup}`}>
-          <div
-            className={`${styles.popupContent}`}
-            style={{
-              borderColor: showSuccessPopup ? "yellow" : "green",
-              borderWidth: "2px",
-              borderStyle: "solid",
-            }}
-          >
-            {showSuccessIcon ? (
-              <div className={`${styles.circularProgress}`}>
-                <div className={`${styles.loadingSpinner}`}></div>
-                <div className={`${styles.progressText}`}>{progress}%</div>
-              </div>
-            ) : (
-              <span className={`${styles["success-icon"]}`}>✔</span>
-            )}
-            <p>{popupMessage}</p>
-          </div>
-        </div>
+        <SuccessPopUp
+          showSuccessPopup={showSuccessPopup}
+          showSuccessIcon={showSuccessIcon}
+          popupMessage={popupMessage}
+          setShowSuccessPopup={setShowSuccessPopup}
+          resetForm={resetForm}
+        />
       )}
 
       {/* Error Popup */}
@@ -564,245 +560,35 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       )}
 
       {/* Table Display */}
-      {tableData.length > 0 && (
-        <div className={styles.tableContainer}>
-          {/* Vertical Table */}
-          <div className={styles.verticalTableWrapper}>
-            {showTable ? (
-              <table className={styles.verticalTable}>
-                <thead>
-                  <tr>
-                    <th className={styles.uniqueID}>
-                      Unique ID
-                      <i
-                        className={`${styles.infoIconID}`}
-                        data-tooltip="Select a column with no duplicate or repeated values as the unique ID"
-                      >
-                        i
-                      </i>
-                    </th>
-
-                    <th>Column Names</th>
-                    <th className={styles.columnType}>
-                      Column Type
-                      <i
-                        className={`${styles.infoIconCT}`}
-                        data-tooltip="Specify the type of data for this column (e.g., text, number, date)."
-                      >
-                        i
-                      </i>
-                    </th>
-                    <th>
-                      Sample Data 1
-                      {/* <i
-                        className={`${styles.infoIcon}`}
-                        title="An example of data for this column."
-                      >
-                       ℹ️
-                      </i> */}
-                    </th>
-                    <th>Sample Data 2</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {tableHeaders.map((header, index) => (
-                    <tr key={index}>
-                      <td className={`${styles.radioCenter}`}>
-                        <input
-                          type="radio"
-                          name="uniqueId"
-                          checked={uniqueId === header}
-                          onChange={() => handleUniqueIdChange(index)}
-                        />
-                      </td>
-                      <td>{header}</td>
-                      <td>
-                        <select
-                          value={columnTypes[index]}
-                          onChange={(e) =>
-                            handleColumnTypeChange(index, e.target.value)
-                          }
-                        >
-                          <option value="Single line of text">
-                            Single line of text
-                          </option>
-                          <option value="Multiple Line of text">
-                            Multiple Line of text
-                          </option>
-                          <option value="Number">Number</option>
-                          <option value="Currency">Currency</option>
-                          <option value="DateTime">Date</option>
-                        </select>
-                        {columnTypes[index] === "Single line of text" && (
-                          <div className={`${styles.infomessage}`}>
-                            {/* <span className={`${styles.infoicon}`}>ℹ️</span> */}
-                            255 characters limit
-                          </div>
-                        )}
-                        {columnTypes[index] === "Multiple Line of text" && (
-                          <div className={`${styles.infomessage}`}>
-                            {/* <span className={`${styles.infoicon}`}>ℹ️</span> */}
-                            Multiple lines allowed.
-                          </div>
-                        )}
-                        {columnTypes[index] === "Number" && (
-                          <div className={`${styles.infomessage}`}>
-                            {/* <span className={`${styles.infoicon}`}>ℹ️</span> */}
-                            Enter a number (no symbols).
-                          </div>
-                        )}
-                        {columnTypes[index] === "DateTime" && (
-                          <div className={`${styles.infomessage}`}>
-                            {/* <span className={`${styles.infoicon}`}>ℹ️</span> */}
-                            Select a date (MM/DD/YYYY).
-                          </div>
-                        )}
-                        {columnTypes[index] === "Currency" && (
-                          <div className={`${styles.infomessage}`}>
-                            {/* <span className={`${styles.infoicon}`}>ℹ️</span> */}
-                            Enter a currency value.
-                          </div>
-                        )}
-                      </td>
-                      <td>{tableData[0]?.[index] || ""}</td>
-                      <td>{tableData[1]?.[index] || ""}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <table className={styles.dataTable}>
-                <thead>
-                  <tr>
-                    {tableHeaders.map((header, index) => (
-                      <th key={index}>{header}</th>
-                    ))}
-                    {/* Conditionally render the 'Attachment' header based on radio selection */}
-                    {createDocLib === "yes" && <th>Attachment</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {tableData.map((row, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {row.map((cell, cellIndex) => (
-                        <td key={cellIndex}>{cell}</td>
-                      ))}
-                      {/* Conditionally render the 'Attachment' column based on radio selection */}
-                      {createDocLib === "yes" && (
-                        <td>
-                          <input type="file" />
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      )}
+      <TableSection
+        tableData={tableData}
+        tableHeaders={tableHeaders}
+        columnTypes={columnTypes}
+        uniqueId={uniqueId}
+        createDocLib={createDocLib}
+        showTable={showTable}
+        handleUniqueIdChange={handleUniqueIdChange}
+        handleColumnTypeChange={handleColumnTypeChange}
+      />
 
       {/* Back and Submit Buttons */}
       {showButtons && (
-        <div className={`${styles.backSubmitbtn}`}>
-          <div className={`${styles.backBtn}`}>
-            <button>
-              <Link to="/selectlisttype">Back</Link>
-            </button>
-          </div>
-          <div className={`${styles.validateBtn}`}>
-            {showTable ? (
-              <button
-                onClick={async () => {
-                  const isValid = await validateColumns();
-                  if (isValid) {
-                    setIsDialogVisible(true);
-                  } else {
-                    //alert("Validation failed. Please correct the data.");
-                  }
-                }}
-              >
-                Validate
-              </button>
-            ) : (
-              <button
-                onClick={async () => {
-                  try {
-                    // Step 1: Create SharePoint List
-                    setPopupMessage("Creating SharePoint list...");
-                    if (createDocLib === "yes") {
-                      setProgress(35);
-                    } else {
-                      setProgress(50);
-                    }
-
-                    setShowSuccessPopup(true);
-
-                    const isListCreationSuccess = await createSharePointList();
-                    if (!isListCreationSuccess) {
-                      //setProgress(0);
-                      //setPopupMessage('Failed to create SharePoint list.');
-                      //await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
-                      setShowSuccessPopup(false);
-                      setErrorPopupMessage("Failed to create SharePoint list.");
-                      setIsPopupOpen(true);
-                      return; // Stop the process
-                    }
-                    await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
-
-                    if (createDocLib === "yes") {
-                      // Step 2: Create Document Library
-                      setPopupMessage("Creating document library...");
-                      setProgress(70);
-
-                      const isLibraryCreationSuccess =
-                        await createDocumentLibrary();
-                      if (!isLibraryCreationSuccess) {
-                        setShowSuccessPopup(false);
-                        setErrorPopupMessage(
-                          "Failed to create document library."
-                        );
-                        setIsPopupOpen(true);
-                        return; // Stop the process
-                      }
-                    }
-
-                    await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
-
-                    // Step 3: Add Data to List
-                    setPopupMessage("Submitting data...");
-                    setProgress(100);
-
-                    const isDataSubmissionSuccess = await addDataToList();
-                    if (!isDataSubmissionSuccess) {
-                      setShowSuccessPopup(false);
-                      setErrorPopupMessage("Failed to submit data.");
-                      setIsPopupOpen(true);
-                      return; // Stop the process
-                    }
-                    await new Promise((resolve) => setTimeout(resolve, 1000)); // Show for 3 seconds
-
-                    setPopupMessage("Data successfully submitted.");
-                    setShowSuccessIcon(false); // Show the success icon
-                    await new Promise((resolve) => setTimeout(resolve, 2000)); // Show for 3 seconds
-
-                    // Hide popup after completion
-                    setShowSuccessPopup(false);
-                    setShowTable(false);
-                  } catch (error) {
-                    setErrorPopupMessage(
-                      `An unexpected error occurred. ${error.message} `
-                    );
-                    setIsPopupOpen(true);
-                  }
-                }}
-              >
-                Submit
-              </button>
-            )}
-          </div>
-        </div>
+        <BackSubmitButtons
+        showButtons={showButtons}
+        showTable={showTable}
+        validateColumns={validateColumns}
+        createSharePointList={createSharePointList}
+        createDocumentLibrary={createDocumentLibrary}
+        addDataToList={addDataToList}
+        createDocLib={createDocLib}
+        setIsDialogVisible={setIsDialogVisible}
+        setPopupMessage={setPopupMessage}
+        setShowSuccessPopup={setShowSuccessPopup}
+        setErrorPopupMessage={setErrorPopupMessage}
+        setIsPopupOpen={setIsPopupOpen}
+        setShowTable={setShowTable}
+        setShowSuccessIcon={setShowSuccessIcon}
+      />
       )}
     </div>
   );
