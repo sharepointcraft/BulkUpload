@@ -42,6 +42,11 @@ body {
 // ------------------------------
 // INNER BOX (for title or section headers)
 // ------------------------------
+.homeInner{
+  border: 1px solid #c6c6c6;
+  padding: 15px;
+  margin-bottom: 20px;
+}
 .InnerBox {
   width: 100%; // Full width of the parent container
   height: 50px; // Fixed height for the inner box
@@ -49,6 +54,11 @@ body {
   justify-content: center; // Center the content horizontally
   align-items: center; // Center the content vertically
   margin-bottom: 20px; // Space below the inner box
+  // border: 2px solid #c6c6c6;
+}
+.InnerBox h1{
+  font-size: 24px;
+  text-decoration: underline;
 }
 
 // ------------------------------
@@ -58,6 +68,7 @@ body {
   width: 100%;
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
 
   // Styling for the button inside homeBtn
   button {
@@ -82,8 +93,7 @@ body {
   width: 40px;
 }
 
-
-// ------------------------------
+//---------------------------
 // FORM GROUP (for labels and inputs)
 // ------------------------------
 .form-group {
@@ -400,20 +410,23 @@ body {
 .radio-group div {
   display: flex;
   align-items: center;
-  margin-bottom: 5px;
 }
 
 /* Label styling for radio buttons */
 .radio-group label {
-  margin-left: 5px;
   font-size: 14px;
   color: #333;
 }
 
-/* Radio button styling */
-.radio-group input[type="radio"] {
+.yesNobtn{
+  border: none;
+}
+.yesNobtn div input[type="radio"]{
+  margin-right: 5px;
   accent-color: #0078d4; /* Blue color for the radio buttons */
-  margin-right: 10px;
   transform: scale(1.2); /* Make radio buttons slightly larger */
 }
-
+.yesNobtn div{
+  margin-right: 10px;
+} 
+// ---

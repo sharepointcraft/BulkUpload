@@ -37,7 +37,7 @@ const TableSection: React.FC<TableSectionProps> = ({
                   Unique ID
                   <i
                     className={`${styles.infoIconID}`}
-                    data-tooltip="Select a column with no duplicate or repeated values as the unique ID"
+                    data-tooltip="Choose a column where each value is different and does not repeat within the spreadsheet"
                   >
                     i
                   </i>

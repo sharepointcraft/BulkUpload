@@ -50,7 +50,7 @@ const BackSubmitButtons: React.FC<BackSubmitButtonsProps> = ({
       const isListCreated = await createSharePointList();
       if (!isListCreated) {
         setShowSuccessPopup(false);
-        setErrorPopupMessage('Failed to create SharePoint list.');
+        setErrorPopupMessage('List Name: List name already exists, Please use different name.');
         setIsPopupOpen(true);
         return;
       }
