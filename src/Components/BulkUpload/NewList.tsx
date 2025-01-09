@@ -333,13 +333,14 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
   const createDocumentLibrary = async (): Promise<boolean> => {
     try {
       const requestDigest = await getRequestDigest(); // Fetch digest dynamically
-
+  
+      // Step 1: Create the document library
       const libraryPayload = {
         __metadata: { type: "SP.List" },
         Title: `${listName}`,
         BaseTemplate: 101, // Document Library
       };
-
+  
       const response = await fetch(`${siteUrl}/_api/web/lists`, {
         method: "POST",
         headers: {
@@ -348,78 +349,171 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
         },
         body: JSON.stringify(libraryPayload),
       });
-
+  
       if (!response.ok) {
         throw new Error(`Error creating library: ${response.statusText}`);
       }
-
-      //alert("Document library created successfully!");
+  
+      console.log("Document library created successfully.");
+  
+      // Step 2: Add a unique ID column to the library
+      const columnPayload = {
+        __metadata: { type: "SP.Field" },
+        FieldTypeKind: 2, // Text field
+        Title: "UniqueID",
+      };
+  
+      const columnResponse = await fetch(
+        `${siteUrl}/_api/web/lists/getbytitle('${listName}_Documents')/fields`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json;odata=verbose",
+            "X-RequestDigest": requestDigest,
+          },
+          body: JSON.stringify(columnPayload),
+        }
+      );
+  
+      if (!columnResponse.ok) {
+        throw new Error(`Error creating UniqueID column: ${columnResponse.statusText}`);
+      }
+  
+      console.log("UniqueID column added successfully.");
       return true;
     } catch (error) {
       console.error(error);
-      //alert("Error creating the document library.");
       return false;
     }
   };
-
+  
   const addDataToList = async (): Promise<boolean> => {
-    const requestDigest = await getRequestDigest(); // Fetch digest dynamically
-    let allDataAddedSuccessfully = true; // Flag to track overall success
-
-    const parseCurrency = (value: string | number): number => {
-      if (typeof value === "string") {
-        return Number(value.replace(/[^0-9.]/g, "")); // Remove '$' and other non-numeric characters
-      }
-      return Number(value);
-    };
-
-    // Iterate over each row of data
+    const requestDigest = await getRequestDigest(); // Fetch the request digest dynamically
+    let allDataAddedSuccessfully = true; // Track if all data was successfully added
+  
+    // Define the index for Attachments column
+    const attachmentsColumnIndex = 1; // Adjust based on your data structure
+  
     for (const row of tableData) {
+      const hasAttachment = row[attachmentsColumnIndex]; // Check if the row has an attachment
+  
       const itemPayload: Record<string, any> = {};
-
-      // Map headers and cell values to payload
+  
+      // Map headers and cell values to the payload
       tableHeaders.forEach((header, index) => {
         const internalColumnName = header
-          .replace(/\s+/g, "_x0020_") // Replace spaces with _x0020_
-          .replace(/\//g, "_x002f_"); // Replace slashes with _x002f_
-        const cellValue = row[index]; // Get the cell value
-        if (columnTypes[index] === "Currency") {
-          const numericValue = parseCurrency(cellValue);
-          itemPayload[internalColumnName] = numericValue;
-        } else {
-          itemPayload[internalColumnName] = cellValue; // Map each header to its corresponding cell value
-        }
+          .replace(/\s+/g, "_x0020_")
+          .replace(/\//g, "_x002f_");
+        const cellValue = row[index];
+        itemPayload[internalColumnName] = cellValue;
       });
-
-      // Try to add data to the list
+  
       try {
+        // Add the data row to the SharePoint list
         const response = await fetch(
           `${siteUrl}/_api/web/lists/getbytitle('${listName}')/items`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json;odata=verbose",
+              Accept: "application/json;odata=verbose",
               "X-RequestDigest": requestDigest,
             },
             body: JSON.stringify({
-              __metadata: { type: "SP.ListItem" },
+              __metadata: { type: "SP.Data.ListItem" },
               ...itemPayload,
             }),
           }
         );
-
+  
         if (!response.ok) {
-          throw new Error(`Error adding item to list: ${response.statusText}`);
+          throw new Error(
+            `Failed to add item to list. HTTP status: ${response.status}`
+          );
+        }
+  
+        // Removed 'result' since it was unused
+        await response.json();
+  
+        // If the record has attachments, handle them
+        if (hasAttachment) {
+          const attachmentFiles = await processAttachments(row[attachmentsColumnIndex]);
+          const uniqueId = itemPayload["UniqueID"]; // Use UniqueID from the payload
+          if (uniqueId) {
+            await uploadAttachmentsToDocSet(uniqueId, attachmentFiles);
+          } else {
+            console.warn("UniqueID not found for this record.");
+          }
         }
       } catch (error) {
         console.error("Failed to add data to list:", error);
-        allDataAddedSuccessfully = false; // Mark failure
+        allDataAddedSuccessfully = false;
       }
     }
-
-    // Return true if all items were added successfully, otherwise false
+  
     return allDataAddedSuccessfully;
   };
+  
+  
+  
+  
+  // Helper function to process attachments
+  const processAttachments = async (attachmentsData: string): Promise<File[]> => {
+    const attachmentFiles: File[] = [];
+  
+    if (attachmentsData) {
+      const attachmentUrls = attachmentsData.split(","); // Assuming attachments are comma-separated URLs or file names
+      for (const url of attachmentUrls) {
+        const fileName = url.substring(url.lastIndexOf("/") + 1);
+  
+        // Fetch file content as Blob and create a File object
+        const response = await fetch(url);
+        if (response.ok) {
+          const blob = await response.blob();
+          const file = new File([blob], fileName, { type: blob.type });
+          attachmentFiles.push(file);
+        } else {
+          console.error(`Failed to fetch attachment: ${url}`);
+        }
+      }
+    }
+  
+    return attachmentFiles;
+  };
+  
+  // Function to upload attachments to a Document Set
+  const uploadAttachmentsToDocSet = async (
+    uniqueID: string,
+    attachmentFiles: File[]
+  ): Promise<void> => {
+    try {
+      for (const file of attachmentFiles) {
+        const response = await fetch(
+          `${siteUrl}/_api/web/getfolderbyserverrelativeurl('DocumentLibraryName/${uniqueID}')/files/add(overwrite=true, url='${file.name}')`,
+          {
+            method: "POST",
+            headers: {
+              "X-RequestDigest": await getRequestDigest(),
+              Accept: "application/json;odata=verbose",
+            },
+            body: file,
+          }
+        );
+  
+        if (!response.ok) {
+          throw new Error(
+            `Failed to upload attachment. HTTP status: ${response.status}`
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error uploading attachments to DocSet:", error);
+    }
+  };
+  
+  
+  
+  
   const navigate = useNavigate(); // React Router hook for navigation
 
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -447,22 +541,15 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     <div className={styles.mainBox}>
       {/* Success Popup */}
       {showSuccessPopup && (
-        <div className={`${styles.successPopup}`}>
-          <div className={`${styles.popupContent}`} style={{ borderColor: showSuccessPopup ? 'yellow' : 'green', borderWidth: '2px', borderStyle: 'solid', }}>
-
-            {showSuccessIcon ? (
-              <div className={`${styles.circularProgress}`}>
-                <div className={`${styles.loadingSpinner}`}></div>
-                <div className={`${styles.progressText}`}>{progress}%</div>
-              </div>
-            ) : (
-              <span className={`${styles["success-icon"]}`}>✔</span>
-            )}
-            <p>{popupMessage}</p>
-          </div>
-        </div>
+        <SuccessPopUp
+          showSuccessPopup={showSuccessPopup}
+          showSuccessIcon={showSuccessIcon}
+          popupMessage={popupMessage}
+          setShowSuccessPopup={setShowSuccessPopup}
+          resetForm={resetForm}
+        />
       )}
-
+      
       {/* Error Popup */}
       {isPopupOpen && (
         <ErrorPopup
