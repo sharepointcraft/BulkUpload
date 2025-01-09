@@ -1,0 +1,55 @@
+// ------------------------------
+// VARIABLES
+// ------------------------------
+// Colors used throughout the design for consistency
+$primary-color: #ffc107; // Primary button color (yellow)
+$focus-color: #0078d4; // Focus state color for inputs (blue)
+$border-color: #ccc; // Standard border color (light gray)
+$light-background: #f9f9f9; // Background color for main container
+$gray-text: #6f6f6f; // Text color for information message
+$header-bg: #f2f2f2; // Background color for table headers
+
+// ------------------------------
+// BACK & SUBMIT BUTTONS
+// ------------------------------
+.backSubmitbtn {
+    display: flex; // Use flexbox to align buttons side by side
+    justify-content: space-between; // Place buttons at opposite ends of the container
+  }
+  
+  .backBtn {
+    display: flex;
+    justify-content: start;
+    button {
+      border-radius: 5px;
+      border: none;
+      padding: 5px;
+      background-color: $primary-color;
+      cursor: pointer;
+      font-weight: 500;
+      width: 80px;
+    }
+    a {
+      text-decoration: none; // Remove underline from links
+      color: black; // Set text color to black
+      font-weight: 500; // Set font weight to match the button
+    }
+  }
+  .validateBtn {
+    display: flex;
+    justify-content: start;
+    button {
+      border-radius: 5px;
+      border: none;
+      padding: 5px;
+      background-color: $primary-color;
+      cursor: pointer;
+      font-weight: 500;
+      width: 80px;
+    }
+    a {
+      text-decoration: none; // Remove underline from links
+      color: black; // Set text color to black
+      font-weight: 500; // Set font weight to match the button
+    }
+  }
