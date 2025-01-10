@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './BackSubmitButtons.module.scss'; // Assuming you have a separate CSS module for styling
- 
+
 interface BackSubmitButtonsProps {
   showButtons: boolean;
   showTable: boolean;
@@ -18,7 +18,7 @@ interface BackSubmitButtonsProps {
   setShowTable: (value: boolean) => void;
   setShowSuccessIcon: (value: boolean) => void;
 }
- 
+
 const BackSubmitButtons: React.FC<BackSubmitButtonsProps> = ({
   showButtons,
   showTable,
@@ -41,12 +41,12 @@ const BackSubmitButtons: React.FC<BackSubmitButtonsProps> = ({
       setIsDialogVisible(true);
     }
   };
- 
+
   const handleSubmitClick = async () => {
     try {
       setPopupMessage('Creating SharePoint list...');
       setShowSuccessPopup(true);
- 
+
       const isListCreated = await createSharePointList();
       if (!isListCreated) {
         setShowSuccessPopup(false);
@@ -54,7 +54,7 @@ const BackSubmitButtons: React.FC<BackSubmitButtonsProps> = ({
         setIsPopupOpen(true);
         return;
       }
- 
+
       if (createDocLib === 'yes') {
         setPopupMessage('Creating document library...');
         const isLibraryCreated = await createDocumentLibrary();
@@ -65,7 +65,7 @@ const BackSubmitButtons: React.FC<BackSubmitButtonsProps> = ({
           return;
         }
       }
- 
+
       setPopupMessage('Submitting data...');
       const isDataSubmitted = await addDataToList();
       if (!isDataSubmitted) {
@@ -74,7 +74,7 @@ const BackSubmitButtons: React.FC<BackSubmitButtonsProps> = ({
         setIsPopupOpen(true);
         return;
       }
- 
+
       setPopupMessage('Data successfully submitted.');
       setShowSuccessIcon(false);
       setShowTable(false);
@@ -83,25 +83,25 @@ const BackSubmitButtons: React.FC<BackSubmitButtonsProps> = ({
       setIsPopupOpen(true);
     }
   };
- 
+
   if (!showButtons) return null;
- 
+
   return (
-<div className={`${styles.backSubmitbtn}`}>
-<div className={`${styles.backBtn}`}>
-<button>
-<Link to="/selectlisttype">Back</Link>
-</button>
-</div>
-<div className={`${styles.validateBtn}`}>
+    <div className={`${styles.backSubmitbtn}`}>
+      <div className={`${styles.backBtn}`}>
+        <button>
+          <Link to="/selectlisttype">Back</Link>
+        </button>
+      </div>
+      <div className={`${styles.validateBtn}`}>
         {showTable ? (
-<button onClick={handleValidateClick}>Validate</button>
+          <button onClick={handleValidateClick}>Validate</button>
         ) : (
-<button onClick={handleSubmitClick}>Submit</button>
+          <button onClick={handleSubmitClick}>Submit</button>
         )}
-</div>
-</div>
+      </div>
+    </div>
   );
 };
- 
+
 export default BackSubmitButtons;

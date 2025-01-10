@@ -7,6 +7,7 @@ interface SuccessPopUpProps {
   showSuccessIcon: boolean;
   popupMessage: string;
   setShowSuccessPopup: (show: boolean) => void;
+  setShowSuccessIcon: (show: boolean) => void;
   resetForm: () => void;
 }
 
@@ -15,6 +16,7 @@ const SuccessPopUp: React.FC<SuccessPopUpProps> = ({
     showSuccessIcon,
     popupMessage,
     setShowSuccessPopup,
+    setShowSuccessIcon,
     resetForm,
   }) => {
     // If showSuccessPopup is false, return an empty div instead of false.
@@ -40,6 +42,7 @@ const SuccessPopUp: React.FC<SuccessPopUpProps> = ({
             <button
               className={styles.okButton}
               onClick={() => {
+                setShowSuccessIcon(true);
                 setShowSuccessPopup(false);
                 resetForm();
               }}
