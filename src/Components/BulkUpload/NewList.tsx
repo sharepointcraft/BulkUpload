@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import styles from "../../Components/BulkUpload/NewList.module.scss";
 import SuccessPopUp from "../SuccessPopUp/SuccessPopUp";
-import TableSection from "../TableSection/TableSection"; // Adjust the import path
+//import TableSection from "../TableSection/TableSection"; // Adjust the import path
+import { validateColumns, createSharePointList, createDocumentLibrary, addDataToList } from "../Back_SubmitButton/Functions";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -24,24 +25,30 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
   const [tableHeaders, setTableHeaders] = React.useState<string[]>([]);
   const [columnTypes, setColumnTypes] = React.useState<string[]>([]);
   const [uniqueId, setUniqueId] = React.useState<string | null>(null);
+  const [selectedColumnIndex, setSelectedColumnIndex] = React.useState<number | null>(null);
   const [listName, setListName] = React.useState<string>("");
   const [showTable, setShowTable] = React.useState(true); // State to control table visibility
   const [showButtons, setShowButtons] = React.useState(false); // State to control back and validate/submit visibility
   const [showSuccessPopup, setShowSuccessPopup] = React.useState(false); // State to control progress popup
-  // const [progress, setProgress] = React.useState(0); // State to control width of progesss bar
   const [popupMessage, setPopupMessage] = React.useState(""); // State to control message in progress popup
   const [isDialogVisible, setIsDialogVisible] = React.useState(false); // State to control confirmation popup
   const [showSuccessIcon, setShowSuccessIcon] = React.useState(true);
   const [isPopupOpen, setIsPopupOpen] = React.useState(false);
   const [errorPopupMessage, setErrorPopupMessage] = React.useState("");
   const [createDocLib, setCreateDocLib] = React.useState("no");
+  const [recordFiles, setRecordFiles] = React.useState<Record<string, File>>({}); // Object to store files for each record
+  console.log(recordFiles);
+  console.log(`Selected column index: ${selectedColumnIndex}`);
+
 
   const siteUrl =
     context.pageContext.web.absoluteUrl ||
     "https://realitycraftprivatelimited.sharepoint.com/sites/BulkUpload";
 
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUniqueId(""); // Reset the unique ID
+    setSelectedColumnIndex(null);
     setShowButtons(true);
 
     const file = event.target.files?.[0];
@@ -101,8 +108,13 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
   };
 
   const handleUniqueIdChange = (index: number) => {
-    setUniqueId(tableHeaders[index]);
+    setSelectedColumnIndex(index); // Track the selected radio button column index
+    const selectedColumnValues = tableData.map(row => row[index]); // Get all values in the selected column
+    setUniqueId(JSON.stringify(selectedColumnValues)); // Store column values instead of column name
+    console.log(`Selected column values: ${selectedColumnValues}`);
+
   };
+
   const getRequestDigest = async (): Promise<string> => {
     const response = await fetch(`${siteUrl}/_api/contextinfo`, {
       method: "POST",
@@ -112,114 +124,6 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
     });
     const data = await response.json();
     return data.d.GetContextWebInformation.FormDigestValue;
-  };
-
-  const validateColumns = async () => {
-    const invalidCells: { row: number; col: string; issue: string }[] = [];
-
-    // Check if column headers contain special characters
-    const specialCharPattern = /[^a-zA-Z0-9_ ]/; // Allow letters, numbers, underscores, and spaces
-    tableHeaders.forEach((header, index) => {
-      if (specialCharPattern.test(header)) {
-        invalidCells.push({
-          row: 0, // Header row
-          col: header,
-          issue: "Contains special characters",
-        });
-      }
-    });
-
-    tableData.forEach((row, rowIndex) => {
-      columnTypes.forEach((type, colIndex) => {
-        let cellValue = row[colIndex];
-
-        if (type === "Number" && isNaN(Number(cellValue))) {
-          // Collect invalid cells for Number columns
-          invalidCells.push({
-            row: rowIndex + 1,
-            col: tableHeaders[colIndex],
-            issue: "Expected a number",
-          });
-        } else if (type === "Single line of text") {
-          if (typeof cellValue === "number") {
-            // Convert numbers to strings for text columns
-            row[colIndex] = String(cellValue); // Convert number to string
-          }
-
-          // Check character length for Single line of text
-          if (cellValue.length > 255) {
-            invalidCells.push({
-              row: rowIndex + 1,
-              col: tableHeaders[colIndex],
-              issue: "Exceeded 255 character limit",
-            });
-          }
-        }
-      });
-    });
-
-    if (invalidCells.length > 0) {
-      const message = `
-                        <strong>Invalid data found in the following cells:</strong><br/>
-                      
-                         ${invalidCells
-                           .slice(0, 5)
-                           .map(
-                             (cell) =>
-                               `<li>Row ${cell.row}, Column ${cell.col}: ${cell.issue}</li>`
-                           )
-                           .join("")}
-                        ${
-                          invalidCells.length > 5
-                            ? '<button id="moreErrorsButton">More Errors</button>'
-                            : ""
-                        }
-                      `;
-
-      // alert(message);
-      setErrorPopupMessage(message);
-      setIsPopupOpen(true);
-
-      // Generate the message for the new tab
-      const allErrorsMessage = `
-                                <strong>All Errors:</strong><br/>
-                                <ul>
-                                ${invalidCells
-                                  .map(
-                                    (cell) =>
-                                      `<li>Row ${cell.row}, Column ${cell.col}: ${cell.issue}</li>`
-                                  )
-                                  .join("")}
-                                </ul>
-                              `;
-
-      // Add an event listener for the "More Errors" button
-      setTimeout(() => {
-        const moreErrorsButton = document.getElementById("moreErrorsButton");
-        if (moreErrorsButton) {
-          moreErrorsButton.addEventListener("click", () => {
-            const newTab = window.open("", "_blank");
-            if (newTab) {
-              newTab.document.write(`
-          <html>
-            <head>
-              <title>All Errors</title>
-            </head>
-            <body>
-              ${allErrorsMessage}
-            </body>
-          </html>
-        `);
-              newTab.document.close();
-            }
-          });
-        }
-      }, 0);
-
-      return false; // Return false if data is invalid
-    }
-
-    return true; // Return true if all data is valid
   };
 
   // Method for Confirmation popup Yes button
@@ -333,14 +237,13 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
   const createDocumentLibrary = async (): Promise<boolean> => {
     try {
       const requestDigest = await getRequestDigest(); // Fetch digest dynamically
-  
-      // Step 1: Create the document library
+
       const libraryPayload = {
         __metadata: { type: "SP.List" },
-        Title: `${listName}`,
+        Title: `${listName}_Documents`,
         BaseTemplate: 101, // Document Library
       };
-  
+
       const response = await fetch(`${siteUrl}/_api/web/lists`, {
         method: "POST",
         headers: {
@@ -349,171 +252,78 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
         },
         body: JSON.stringify(libraryPayload),
       });
-  
+
       if (!response.ok) {
         throw new Error(`Error creating library: ${response.statusText}`);
       }
-  
-      console.log("Document library created successfully.");
-  
-      // Step 2: Add a unique ID column to the library
-      const columnPayload = {
-        __metadata: { type: "SP.Field" },
-        FieldTypeKind: 2, // Text field
-        Title: "UniqueID",
-      };
-  
-      const columnResponse = await fetch(
-        `${siteUrl}/_api/web/lists/getbytitle('${listName}_Documents')/fields`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json;odata=verbose",
-            "X-RequestDigest": requestDigest,
-          },
-          body: JSON.stringify(columnPayload),
-        }
-      );
-  
-      if (!columnResponse.ok) {
-        throw new Error(`Error creating UniqueID column: ${columnResponse.statusText}`);
-      }
-  
-      console.log("UniqueID column added successfully.");
+
+      //alert("Document library created successfully!");
       return true;
     } catch (error) {
       console.error(error);
+      //alert("Error creating the document library.");
       return false;
     }
   };
-  
+
   const addDataToList = async (): Promise<boolean> => {
-    const requestDigest = await getRequestDigest(); // Fetch the request digest dynamically
-    let allDataAddedSuccessfully = true; // Track if all data was successfully added
-  
-    // Define the index for Attachments column
-    const attachmentsColumnIndex = 1; // Adjust based on your data structure
-  
+    const requestDigest = await getRequestDigest(); // Fetch digest dynamically
+    let allDataAddedSuccessfully = true; // Flag to track overall success
+
+    const parseCurrency = (value: string | number): number => {
+      if (typeof value === "string") {
+        return Number(value.replace(/[^0-9.]/g, "")); // Remove '$' and other non-numeric characters
+      }
+      return Number(value);
+    };
+
+    // Iterate over each row of data
     for (const row of tableData) {
-      const hasAttachment = row[attachmentsColumnIndex]; // Check if the row has an attachment
-  
       const itemPayload: Record<string, any> = {};
-  
-      // Map headers and cell values to the payload
+
+      // Map headers and cell values to payload
       tableHeaders.forEach((header, index) => {
         const internalColumnName = header
-          .replace(/\s+/g, "_x0020_")
-          .replace(/\//g, "_x002f_");
-        const cellValue = row[index];
-        itemPayload[internalColumnName] = cellValue;
+          .replace(/\s+/g, "_x0020_") // Replace spaces with _x0020_
+          .replace(/\//g, "_x002f_"); // Replace slashes with _x002f_
+        const cellValue = row[index]; // Get the cell value
+        if (columnTypes[index] === "Currency") {
+          const numericValue = parseCurrency(cellValue);
+          itemPayload[internalColumnName] = numericValue;
+        } else {
+          itemPayload[internalColumnName] = cellValue; // Map each header to its corresponding cell value
+        }
       });
-  
+
+      // Try to add data to the list
       try {
-        // Add the data row to the SharePoint list
         const response = await fetch(
           `${siteUrl}/_api/web/lists/getbytitle('${listName}')/items`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json;odata=verbose",
-              Accept: "application/json;odata=verbose",
               "X-RequestDigest": requestDigest,
             },
             body: JSON.stringify({
-              __metadata: { type: "SP.Data.ListItem" },
+              __metadata: { type: "SP.ListItem" },
               ...itemPayload,
             }),
           }
         );
-  
+
         if (!response.ok) {
-          throw new Error(
-            `Failed to add item to list. HTTP status: ${response.status}`
-          );
-        }
-  
-        // Removed 'result' since it was unused
-        await response.json();
-  
-        // If the record has attachments, handle them
-        if (hasAttachment) {
-          const attachmentFiles = await processAttachments(row[attachmentsColumnIndex]);
-          const uniqueId = itemPayload["UniqueID"]; // Use UniqueID from the payload
-          if (uniqueId) {
-            await uploadAttachmentsToDocSet(uniqueId, attachmentFiles);
-          } else {
-            console.warn("UniqueID not found for this record.");
-          }
+          throw new Error(`Error adding item to list: ${response.statusText}`);
         }
       } catch (error) {
         console.error("Failed to add data to list:", error);
-        allDataAddedSuccessfully = false;
+        allDataAddedSuccessfully = false; // Mark failure
       }
     }
-  
+
+    // Return true if all items were added successfully, otherwise false
     return allDataAddedSuccessfully;
   };
-  
-  
-  
-  
-  // Helper function to process attachments
-  const processAttachments = async (attachmentsData: string): Promise<File[]> => {
-    const attachmentFiles: File[] = [];
-  
-    if (attachmentsData) {
-      const attachmentUrls = attachmentsData.split(","); // Assuming attachments are comma-separated URLs or file names
-      for (const url of attachmentUrls) {
-        const fileName = url.substring(url.lastIndexOf("/") + 1);
-  
-        // Fetch file content as Blob and create a File object
-        const response = await fetch(url);
-        if (response.ok) {
-          const blob = await response.blob();
-          const file = new File([blob], fileName, { type: blob.type });
-          attachmentFiles.push(file);
-        } else {
-          console.error(`Failed to fetch attachment: ${url}`);
-        }
-      }
-    }
-  
-    return attachmentFiles;
-  };
-  
-  // Function to upload attachments to a Document Set
-  const uploadAttachmentsToDocSet = async (
-    uniqueID: string,
-    attachmentFiles: File[]
-  ): Promise<void> => {
-    try {
-      for (const file of attachmentFiles) {
-        const response = await fetch(
-          `${siteUrl}/_api/web/getfolderbyserverrelativeurl('DocumentLibraryName/${uniqueID}')/files/add(overwrite=true, url='${file.name}')`,
-          {
-            method: "POST",
-            headers: {
-              "X-RequestDigest": await getRequestDigest(),
-              Accept: "application/json;odata=verbose",
-            },
-            body: file,
-          }
-        );
-  
-        if (!response.ok) {
-          throw new Error(
-            `Failed to upload attachment. HTTP status: ${response.status}`
-          );
-        }
-      }
-    } catch (error) {
-      console.error("Error uploading attachments to DocSet:", error);
-    }
-  };
-  
-  
-  
-  
   const navigate = useNavigate(); // React Router hook for navigation
 
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -546,6 +356,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
           showSuccessIcon={showSuccessIcon}
           popupMessage={popupMessage}
           setShowSuccessPopup={setShowSuccessPopup}
+          setShowSuccessIcon={setShowSuccessIcon}
           resetForm={resetForm}
         />
       )}
@@ -654,35 +465,141 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
       )}
 
       {/* Table Display */}
-      <TableSection
-        tableData={tableData}
-        tableHeaders={tableHeaders}
-        columnTypes={columnTypes}
-        uniqueId={uniqueId}
-        createDocLib={createDocLib}
-        showTable={showTable}
-        handleUniqueIdChange={handleUniqueIdChange}
-        handleColumnTypeChange={handleColumnTypeChange}
-      />
+      {tableData.length > 0 && (
+        <div className={styles.tableContainer}>
+          <div className={styles.verticalTableWrapper}>
+            {showTable ? (
+              <table className={styles.verticalTable}>
+                <thead>
+                  <tr>
+                    <th className={styles.uniqueID}>
+                      Unique ID
+                      <i
+                        className={`${styles.infoIconID}`}
+                        data-tooltip="Select a column with no duplicate or repeated values as the unique ID"
+                      >
+                        i
+                      </i>
+                    </th>
+                    <th>Column Names</th>
+                    <th className={styles.columnType}>
+                      Column Type
+                      <i
+                        className={`${styles.infoIconCT}`}
+                        data-tooltip="Specify the type of data for this column (e.g., text, number, date)."
+                      >
+                        i
+                      </i>
+                    </th>
+                    <th>Sample Data 1</th>
+                    <th>Sample Data 2</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {tableHeaders.map((header, index) => (
+                    <tr key={index}>
+                      <td className={`${styles.radioCenter}`}>
+                        <input
+                          type="radio"
+                          name="uniqueId"
+                          checked={selectedColumnIndex === index} // Keep track of the selected column
+                          onChange={() => handleUniqueIdChange(index)}
+                        />
+                      </td>
+                      <td>{header}</td>
+                      <td>
+                        <select
+                          value={columnTypes[index]}
+                          onChange={(e) => handleColumnTypeChange(index, e.target.value)}
+                        >
+                          <option value="Single line of text">Single line of text</option>
+                          <option value="Multiple Line of text">Multiple Line of text</option>
+                          <option value="Number">Number</option>
+                          <option value="Currency">Currency</option>
+                          <option value="DateTime">Date</option>
+                        </select>
+                        {columnTypes[index] === 'Single line of text' && (
+                          <div className={`${styles.infomessage}`}>255 characters limit</div>
+                        )}
+                        {columnTypes[index] === 'Multiple Line of text' && (
+                          <div className={`${styles.infomessage}`}>Multiple lines allowed.</div>
+                        )}
+                        {columnTypes[index] === 'Number' && (
+                          <div className={`${styles.infomessage}`}>Enter a number (no symbols).</div>
+                        )}
+                        {columnTypes[index] === 'DateTime' && (
+                          <div className={`${styles.infomessage}`}>Select a date (MM/DD/YYYY).</div>
+                        )}
+                        {columnTypes[index] === 'Currency' && (
+                          <div className={`${styles.infomessage}`}>Enter a currency value.</div>
+                        )}
+                      </td>
+                      <td>{tableData[0]?.[index] || ''}</td>
+                      <td>{tableData[1]?.[index] || ''}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <table className={styles.dataTable}>
+                <thead>
+                  <tr>
+                    {tableHeaders.map((header, index) => (
+                      <th key={index}>{header}</th>
+                    ))}
+                    {createDocLib === 'yes' && <th>Attachment</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {tableData.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {row.map((cell, cellIndex) => (
+                        <td key={cellIndex}>{cell}</td>
+                      ))}
+                      {createDocLib === 'yes' && (
+                        <td>
+                          <input
+                            type="file"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]; // Safely get the first file
+                              if (file && selectedColumnIndex !== null && selectedColumnIndex !== undefined) {
+                                handleFileSelection(file, row[selectedColumnIndex]); // Ensure row[0] is a unique identifier
+                              }
+                            }}
+                          />
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Back and Submit Buttons */}
       {showButtons && (
         <BackSubmitButtons
-        showButtons={showButtons}
-        showTable={showTable}
-        validateColumns={validateColumns}
-        createSharePointList={createSharePointList}
-        createDocumentLibrary={createDocumentLibrary}
-        addDataToList={addDataToList}
-        createDocLib={createDocLib}
-        setIsDialogVisible={setIsDialogVisible}
-        setPopupMessage={setPopupMessage}
-        setShowSuccessPopup={setShowSuccessPopup}
-        setErrorPopupMessage={setErrorPopupMessage}
-        setIsPopupOpen={setIsPopupOpen}
-        setShowTable={setShowTable}
-        setShowSuccessIcon={setShowSuccessIcon}
-      />
+          showButtons={showButtons}
+          showTable={showTable}
+          validateColumns={() => validateColumns(tableHeaders, tableData, columnTypes, selectedColumnIndex,setErrorPopupMessage, setIsPopupOpen)}
+          createSharePointList={() => createSharePointList(siteUrl, listName, tableHeaders, columnTypes, setErrorPopupMessage, setIsPopupOpen, getRequestDigest)}
+          createDocumentLibrary={() => {
+            const selectedColumnValues = uniqueId ? JSON.parse(uniqueId) : [];
+            return createDocumentLibrary(getRequestDigest, listName, siteUrl, selectedColumnValues, recordFiles)
+          }}
+          addDataToList={() => addDataToList(tableData, tableHeaders, columnTypes, siteUrl, listName, getRequestDigest)}
+          createDocLib={createDocLib}
+          setIsDialogVisible={setIsDialogVisible}
+          setPopupMessage={setPopupMessage}
+          setShowSuccessPopup={setShowSuccessPopup}
+          setErrorPopupMessage={setErrorPopupMessage}
+          setIsPopupOpen={setIsPopupOpen}
+          setShowTable={setShowTable}
+          setShowSuccessIcon={setShowSuccessIcon}
+        />
       )}
     </div>
   );

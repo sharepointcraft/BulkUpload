@@ -7,8 +7,9 @@
   },
   "main": "lib/index.js",
   "scripts": {
-    "build": "gulp bundle",
     "clean": "gulp clean",
+    "build": "gulp bundle",
+    "serve": "gulp serve",
     "test": "gulp test"
   },
   "dependencies": {
