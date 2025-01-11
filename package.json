@@ -9,7 +9,7 @@
   "scripts": {
     "clean": "gulp clean",
     "build": "gulp bundle",
-    "serve": "gulp serve",
+    "serve": "fast serve",
     "test": "gulp test"
   },
   "dependencies": {

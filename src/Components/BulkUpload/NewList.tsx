@@ -196,7 +196,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
         onDismiss={handleDialogNo}
         dialogContentProps={{
           title: "Confirmation",
-          subText: "Do you want to display the data table?",
+          subText: "Ready to proceed with validation?",
         }}
       >
         <DialogFooter>
@@ -205,8 +205,8 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
         </DialogFooter>
       </Dialog>
 
-      {/* Home Button */}
-      <div className={`${styles.homeBtn}`}>
+       {/* Home Button */}
+       <div className={`${styles.homeBtn}`}>
         <button>
           <Link to="/">
             {" "}
@@ -216,6 +216,10 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
             />
           </Link>
         </button>
+        {/* Title Of the Page */}
+        <div className={`${styles.InnerBox}`}>
+          <h1>Bulk Upload</h1>
+        </div>
         <button onClick={resetForm}>
           <img
             src={require("../../../src/webparts/bulkUpload/assets/circular.png")}
@@ -223,12 +227,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
           />
         </button>
       </div>
-
-      {/* Title Of the Page */}
-      <div className={`${styles.InnerBox}`}>
-        <h1>Bulk Upload</h1>
-      </div>
-
+        <div className={`${styles.homeInner}`}>
       {!showTable ? (
         <div className={styles["form-group"]}>
           <label htmlFor="listName">List Name:</label>
@@ -240,7 +239,8 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
             onChange={(e) => setListName(e.target.value)}
           />
           <div className={styles["radio-group"]}>
-            <label>Do you want to create a document library?</label>
+            <label>Would you like to attach a file to the respected data?</label>
+            <div className={`${styles.yesNobtn}`}>
             <div>
               <input
                 type="radio"
@@ -263,6 +263,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
               />
               <label htmlFor="createDocLibNo">No</label>
             </div>
+            </div>
           </div>
         </div>
       ) : (
@@ -277,7 +278,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
           />
           <i
             className={styles.uploadinfo}
-            data-tooltip="Excel Columns should be in first Line"
+            data-tooltip="Use single-cell column titles, include only one sheet, and ensure all columns have names."
           >
             i
           </i>
@@ -421,6 +422,7 @@ const NewList: React.FC<INewListProps> = ({ context }) => {
           setShowSuccessIcon={setShowSuccessIcon}
         />
       )}
+    </div>
     </div>
   );
 };
