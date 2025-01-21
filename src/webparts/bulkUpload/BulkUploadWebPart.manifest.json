@@ -4,11 +4,9 @@
   "alias": "BulkUploadWebPart",
   "componentType": "WebPart",
 
-  
   "version": "*",
   "manifestVersion": 2,
 
-  
   "requiresCustomScript": false,
   "supportedHosts": ["SharePointWebPart", "TeamsPersonalApp", "TeamsTab", "SharePointFullPage"],
   "supportsThemeVariants": true,
