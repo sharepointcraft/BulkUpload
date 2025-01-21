@@ -3,7 +3,7 @@
   "solution": {
     "name": "bulk-upload-client-side-solution",
     "id": "d79995d7-f010-43d3-9383-723b9ae44ba2",
-    "version": "1.0.0.0",
+    "version": "1.0.0.1",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,

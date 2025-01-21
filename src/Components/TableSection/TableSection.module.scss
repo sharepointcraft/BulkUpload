@@ -1,0 +1,245 @@
+
+// ------------------------------
+// VARIABLES
+// ------------------------------
+// Colors used throughout the design for consistency
+$primary-color: #ffc107; // Primary button color (yellow)
+$focus-color: #0078d4; // Focus state color for inputs (blue)
+$border-color: #ccc; // Standard border color (light gray)
+$light-background: #f9f9f9; // Background color for main container
+$gray-text: #6f6f6f; // Text color for information message
+$header-bg: #f2f2f2; // Background color for table headers
+
+// ------------------------------
+// TABLE STYLES
+// ------------------------------
+
+// Container for the table (handles scrolling if necessary)
+.tableContainer {
+    margin-top: 20px; // Add top margin to separate from other elements
+    position: relative; // Allows positioning of child elements
+    overflow-x: auto; // Enable horizontal scrolling if the table is too wide
+    width: 100%; // Set container width to 100% for responsiveness
+  }
+  
+  // Vertical table styles
+  .verticalTableWrapper {
+    margin-bottom: 20px; // Space below vertical table
+  }
+  
+  .verticalTable {
+    width: 100%; // Make table take full width
+    border-collapse: collapse; // Collapse table borders into a single border
+    margin-bottom: 10px; // Add space below the table
+  }
+  
+  // Table header and cell styles
+  .verticalTable th,
+  .verticalTable td {
+    border: 1px solid #ddd; // Light border for table cells
+    padding: 8px; // Padding inside table cells for spacing
+    text-align: left; // Align text to the left in cells
+    width: auto;
+  }
+  
+  .verticalTable th {
+    background-color: $header-bg; // Set a light background color for table headers
+  }
+  
+  // ------------------------------
+  // DATA TABLE STYLES
+  // ------------------------------
+  .dataTable {
+    width: 100%; // Make table take full width
+    border-collapse: collapse; // Ensure table borders are collapsed
+    margin-top: 20px; // Add top margin for spacing
+  }
+  
+  // Data table cell styling
+  .dataTable th,
+  .dataTable td {
+    padding: 12px; // Add padding inside cells for better readability
+    text-align: left; // Align text to the left in cells
+    border: 1px solid #ddd; // Light gray border for cells
+  }
+  
+  .dataTable th {
+    background-color: #f4f4f4; // Set light gray background for table headers
+    font-weight: bold; // Make header text bold
+  }
+  
+  // Alternate row background color for better readability
+  .dataTable tr:nth-child(even) {
+    background-color: #f9f9f9; // Alternate rows have a slightly darker background
+  }
+  
+  // Hover effect for rows (helps highlight row on hover)
+  .dataTable tr:hover {
+    background-color: #f1f1f1; // Change background color to light gray on hover
+  }
+  
+  // Prevent text overflow and wrap long words in table cells
+  .dataTable td {
+    word-wrap: break-word; // Ensure text wraps inside cells instead of overflowing
+    max-width: 200px; // Set maximum width to 200px for cells
+  }
+  
+  // Caption for the table (optional title)
+  .dataTable caption {
+    font-size: 1.5em; // Make caption text larger
+    margin-bottom: 10px; // Add margin below the caption for separation
+  }
+  
+
+  // ------------------------------
+// UNIQUE ID COLUMN (specific column styling for the unique ID)
+// ------------------------------
+.verticalTable .uniqueID {
+    //width: 50px; // Set a fixed width for the unique ID column to ensure it doesn't stretch
+    text-align: center; // Center-align the unique ID text
+    font-weight: bold; // Make the unique ID text bold for emphasis
+    background-color: #f2f2f2; // Light background color for the unique ID column to distinguish it
+    color: #333; // Set a darker color for the text in the unique ID column for contrast
+    width: auto;
+    align-items: center;
+  }
+  .verticalTable tbody .radioCenter {
+    text-align: center;
+  }
+  .uniqueID {
+    position: relative;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .infoIconID {
+    margin-left: 8px;
+    font-size: 10px;
+    background-color: #0078d4;
+    color: white;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    margin-top: 3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-style: normal;
+    position: relative;
+  }
+  
+  .infoIconID:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -260%;
+    left: 15em;
+    transform: translateX(-50%);
+    background-color: #333333e6;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+  }
+  // Column types css
+  
+  .columnType {
+    position: relative;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .infoIconCT {
+    margin-left: 8px;
+    font-size: 10px;
+    background-color: #0078d4;
+    color: white;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-style: normal;
+    position: relative;
+    margin-top: 3px;
+    float: right;
+  }
+  
+  .infoIconCT:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -260%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333333e6;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+  }
+
+  //---------------------
+  .listinfo {
+    margin-left: 8px;
+    font-size: 10px;
+    background-color: #0078d4;
+    color: white;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-style: normal;
+    position: relative;
+    font-weight: 700;
+  }
+  .listinfo:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -260%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333333e6;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+  }
+
+  // ------------------------------
+// INFORMATION MESSAGE STYLES
+// ------------------------------
+.infomessage {
+    margin-top: 2px; // Add a small margin at the top
+    display: flex; // Use flexbox for alignment of message icon and text
+    border-radius: 4px; // Rounded corners for message box
+    font-size: 12px; // Set small font size for information text
+    color: $gray-text; // Use gray text color
+  }
+  
+  // Information icon styling inside the message box
+  .infoicon {
+    margin-right: 15px; // Add margin to the right of the icon
+    width: 5px; // Set width of the icon
+    height: 5px; // Set height of the icon
+  }
+  

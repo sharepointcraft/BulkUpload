@@ -8,11 +8,11 @@ $border-color: #ccc; // Standard border color (light gray)
 $light-background: #f9f9f9; // Background color for main container
 $gray-text: #6f6f6f; // Text color for information message
 $header-bg: #f2f2f2; // Background color for table headers
-
+ 
 // ------------------------------
 // GLOBAL STYLES
 // ------------------------------
-
+ 
 // Reset margin and padding for all elements to avoid inconsistencies
 * {
   margin: 0;
@@ -23,13 +23,13 @@ $header-bg: #f2f2f2; // Background color for table headers
   // background-color: #1DE9B6;
   // background-color: #FFC400;
 }
-
+ 
 // Base body styling
 body {
   font-family: Arial, sans-serif; // Set a basic sans-serif font for the body
   background-color: $light-background; // Set a light background color for the body
 }
-
+ 
 // ------------------------------
 // MAIN CONTAINER
 // ------------------------------
@@ -38,10 +38,15 @@ body {
   background-color: $light-background; // Set background to light gray
   border: 2px solid $border-color; // Light border around the main container
 }
-
+ 
 // ------------------------------
 // INNER BOX (for title or section headers)
 // ------------------------------
+.homeInner{
+  border: 1px solid #c6c6c6;
+  padding: 15px;
+  margin-bottom: 20px;
+}
 .InnerBox {
   width: 100%; // Full width of the parent container
   height: 50px; // Fixed height for the inner box
@@ -49,16 +54,25 @@ body {
   justify-content: center; // Center the content horizontally
   align-items: center; // Center the content vertically
   margin-bottom: 20px; // Space below the inner box
+  // border: 2px solid #c6c6c6;
 }
-
+.InnerBox h1{
+  font-size: 24px;
+  text-decoration: underline;
+}
+.InnerBox h1{
+  font-size: 24px;
+}
+ 
 // ------------------------------
 // HOME BUTTON
 // ------------------------------
 .homeBtn {
-  width: 100px;
+  width: 100%;
   display: flex;
-  justify-content: start;
-
+  justify-content: space-between;
+  align-items: flex-start;
+ 
   // Styling for the button inside homeBtn
   button {
     border-radius: 5px;
@@ -67,7 +81,7 @@ body {
     background-color: $light-background;
     cursor: pointer;
     font-weight: 500;
-
+ 
     // Styling for the anchor tag inside the button (if present)
     a {
       text-decoration: none; // Remove underline from links
@@ -76,61 +90,25 @@ body {
     }
   }
 }
-
+ 
 .homeBtn img {
   height: 40px;
   width: 40px;
 }
-
-.backBtn {
-  display: flex;
-  justify-content: start;
-  button {
-    border-radius: 5px;
-    border: none;
-    padding: 5px;
-    background-color: $primary-color;
-    cursor: pointer;
-    font-weight: 500;
-    width: 80px;
-  }
-  a {
-    text-decoration: none; // Remove underline from links
-    color: black; // Set text color to black
-    font-weight: 500; // Set font weight to match the button
-  }
-}
-.validateBtn {
-  display: flex;
-  justify-content: start;
-  button {
-    border-radius: 5px;
-    border: none;
-    padding: 5px;
-    background-color: $primary-color;
-    cursor: pointer;
-    font-weight: 500;
-    width: 80px;
-  }
-  a {
-    text-decoration: none; // Remove underline from links
-    color: black; // Set text color to black
-    font-weight: 500; // Set font weight to match the button
-  }
-}
-// ------------------------------
+ 
+//---------------------------
 // FORM GROUP (for labels and inputs)
 // ------------------------------
 .form-group {
   margin-bottom: 10px; // Space below each form group for separation
-
+ 
   // Styling for the label in form group
   label {
     font-weight: bold; // Make label text bold
     margin-bottom: 5px; // Space between label and input
     margin-right: 5px; // Add right margin to create space between label and input
   }
-
+ 
   // Styling for text input fields
   input[type="text"],
   input[type="file"] {
@@ -140,7 +118,7 @@ body {
     border-radius: 4px; // Rounded corners for inputs
     box-sizing: border-box; // Ensures padding doesn't affect the overall width
   }
-
+ 
   // Focus state for text and file inputs
   input[type="text"]:focus,
   input[type="file"]:focus {
@@ -149,7 +127,7 @@ body {
     box-shadow: 0 0 5px rgba(0, 120, 212, 0.5); // Add blue glow effect on focus
   }
 }
-
+ 
 // ------------------------------
 // UNIQUE ID COLUMN (specific column styling for the unique ID)
 // ------------------------------
@@ -174,7 +152,7 @@ body {
   justify-content: space-between;
   align-items: center;
 }
-
+ 
 .infoIconID {
   margin-left: 8px;
   font-size: 10px;
@@ -191,7 +169,7 @@ body {
   font-style: normal;
   position: relative;
 }
-
+ 
 .infoIconID:hover::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -208,7 +186,7 @@ body {
   z-index: 10;
 }
 // Column types css
-
+ 
 .columnType {
   position: relative;
   font-size: 14px;
@@ -234,7 +212,7 @@ body {
   margin-top: 3px;
   float: right;
 }
-
+ 
 .infoIconCT:hover::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -314,11 +292,11 @@ body {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   z-index: 10;
 }
-
+ 
 // ------------------------------
 // TABLE STYLES
 // ------------------------------
-
+ 
 // Container for the table (handles scrolling if necessary)
 .tableContainer {
   margin-top: 20px; // Add top margin to separate from other elements
@@ -326,18 +304,18 @@ body {
   overflow-x: auto; // Enable horizontal scrolling if the table is too wide
   width: 100%; // Set container width to 100% for responsiveness
 }
-
+ 
 // Vertical table styles
 .verticalTableWrapper {
   margin-bottom: 20px; // Space below vertical table
 }
-
+ 
 .verticalTable {
   width: 100%; // Make table take full width
   border-collapse: collapse; // Collapse table borders into a single border
   margin-bottom: 10px; // Add space below the table
 }
-
+ 
 // Table header and cell styles
 .verticalTable th,
 .verticalTable td {
@@ -346,11 +324,11 @@ body {
   text-align: left; // Align text to the left in cells
   width: auto;
 }
-
+ 
 .verticalTable th {
   background-color: $header-bg; // Set a light background color for table headers
 }
-
+ 
 // ------------------------------
 // DATA TABLE STYLES
 // ------------------------------
@@ -359,7 +337,7 @@ body {
   border-collapse: collapse; // Ensure table borders are collapsed
   margin-top: 20px; // Add top margin for spacing
 }
-
+ 
 // Data table cell styling
 .dataTable th,
 .dataTable td {
@@ -367,34 +345,34 @@ body {
   text-align: left; // Align text to the left in cells
   border: 1px solid #ddd; // Light gray border for cells
 }
-
+ 
 .dataTable th {
   background-color: #f4f4f4; // Set light gray background for table headers
   font-weight: bold; // Make header text bold
 }
-
+ 
 // Alternate row background color for better readability
 .dataTable tr:nth-child(even) {
   background-color: #f9f9f9; // Alternate rows have a slightly darker background
 }
-
+ 
 // Hover effect for rows (helps highlight row on hover)
 .dataTable tr:hover {
   background-color: #f1f1f1; // Change background color to light gray on hover
 }
-
+ 
 // Prevent text overflow and wrap long words in table cells
 .dataTable td {
   word-wrap: break-word; // Ensure text wraps inside cells instead of overflowing
   max-width: 200px; // Set maximum width to 200px for cells
 }
-
+ 
 // Caption for the table (optional title)
 .dataTable caption {
   font-size: 1.5em; // Make caption text larger
   margin-bottom: 10px; // Add margin below the caption for separation
 }
-
+ 
 // ------------------------------
 // BACK & SUBMIT BUTTONS
 // ------------------------------
@@ -402,7 +380,7 @@ body {
   display: flex; // Use flexbox to align buttons side by side
   justify-content: space-between; // Place buttons at opposite ends of the container
 }
-
+ 
 // ------------------------------
 // INFORMATION MESSAGE STYLES
 // ------------------------------
@@ -413,190 +391,44 @@ body {
   font-size: 12px; // Set small font size for information text
   color: $gray-text; // Use gray text color
 }
-
+ 
 // Information icon styling inside the message box
 .infoicon {
   margin-right: 15px; // Add margin to the right of the icon
   width: 5px; // Set width of the icon
   height: 5px; // Set height of the icon
 }
-
-/* Success Popup Styles */
-.successPopup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  animation: fadeIn 0.5s ease-in-out;
-  overflow: visible; /* Ensure no clipping occurs */
-}
-
-/* Add fade-in animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Success Popup Styles */
-.popupContent {
-  display: flex; /* Make the content a flex container */
-  flex-direction: column; /* Arrange children in a column */
-  justify-content: center; /* Vertically center the children */
-  align-items: center;
-  background: linear-gradient(135deg, #ffffff, #f9f9f9);
-  padding: 20px;
-  border-radius: 16px;
-  text-align: center;
-  height: 250px;
-  width: 250px;
-  max-width: 90%;
-  box-sizing: border-box; /* Ensure padding and borders are included in width and height */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  border: 2px solid #4caf50; /* Replace with your primary color */
-  animation: scaleUp 0.4s ease-in-out;
-  overflow: visible; /* Ensure corners are not clipped */
-}
-
-/* Add scale-up animation */
-@keyframes scaleUp {
-  from {
-    transform: scale(0.8);
-  }
-  to {
-    transform: scale(1);
-  }
-}
-
-/* Circular Progress Bar */
-.circularProgress {
-  position: relative;
-  width: 140px;
-  height: 140px;
-}
-
-/* Loading spinner styles */
-.loadingSpinner {
-  display: block;
-  position: absolute;
-  top: 5%;
-  left: 5%;
-  transform: translate(-50%, -50%);
-  border: 8px solid #f3f3f3;
-  border-top: 8px solid $primary-color;
-  border-radius: 50%;
-  width: 120px;
-  height: 120px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-// .circularProgress svg {
-//   transform: rotate(-90deg); /* Start progress bar from top */
-//   width: 100%;
-//   height: 100%;
-// }
-
-// .circularProgress .progressCircle {
-//   fill: none;
-//   stroke-width: 8;
-// }
-
-// .circularProgress .progressCircle.bg {
-//   stroke: #e0e0e0; /* Background color of progress bar */
-// }
-
-// .circularProgress .progressCircle.fg {
-//   stroke: $primary-color;
-//   stroke-linecap: round;
-//   stroke-dasharray: 314; /* Circumference of the circle (2 * π * r) */
-//   stroke-dashoffset: 314; /* Initially hidden (circle is empty) */
-//   transition: stroke-dashoffset 0.5s ease; /* Smooth progress update */
-// }
-
-// .circularProgress .progressCircle.blink {
-//   stroke: black; /* White sliding animation */
-//   stroke-width: 12; /* Slightly thicker for visibility */
-//   stroke-linecap: round;
-//   stroke-dasharray: 50, 264; /* Short dashes for sliding */
-//   stroke-dashoffset: 0;
-//   animation: slidingAnimation 2s linear infinite; /* Infinite sliding animation */
-// }
-
-.circularProgress .progressText {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 20px;
-  font-weight: bold;
-  color: $primary-color;
-}
-
-p {
-  font-size: 20px;
-  color: #333;
-  margin: 0;
-  font-weight: bold;
-}
-
-/* Sliding Animation */
-// @keyframes slidingAnimation {
-//   0% {
-//     stroke-dashoffset: 0;
-//   }
-//   100% {
-//     stroke-dashoffset: -314; /* Complete one circle */
-//   }
-// }
-
-.success-icon {
-  font-size: 60px;
-  color: green;
-  border: 5px solid;
-  padding: 10px 25px;
-  border-radius: 50%;
-  margin-bottom: 10px;
-}
-
-
+ 
+ 
+ 
+ 
 /* Container for the radio group */
 .radio-group {
   margin-top: 10px;
   display: flex;
   flex-direction: column;
 }
-
+ 
 /* Each radio button and label pair */
 .radio-group div {
   display: flex;
   align-items: center;
-  margin-bottom: 5px;
 }
-
+ 
 /* Label styling for radio buttons */
 .radio-group label {
-  margin-left: 5px;
   font-size: 14px;
   color: #333;
 }
 
-/* Radio button styling */
-.radio-group input[type="radio"] {
+ 
+.yesNobtn{
+  border: none;
+}
+.yesNobtn div input[type="radio"]{
+  margin-right: 5px;
   accent-color: #0078d4; /* Blue color for the radio buttons */
-  margin-right: 10px;
   transform: scale(1.2); /* Make radio buttons slightly larger */
 }
-
+.yesNobtn div{
+  margin-right: 10px;}
