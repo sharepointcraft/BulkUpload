@@ -19,6 +19,10 @@
   align-items: center;
 }
 
+.InnerBox h1 {
+  font-size: 35px;
+}
+
 .OuterBox h3 {
   font-size: 18px;
 }
@@ -108,6 +112,11 @@
   padding: 0px 0px 0px 0px;
 }
 
+.bulkTitle h3,
+.dashTitle h3 {
+  font-size: 25px;
+}
+
 .bulkImage,
 .dashImage,
 .ExistListImg,
@@ -126,3 +135,9 @@
   display: flex;
   justify-content: center;
 }
+
+.bulkBtn button a,
+.dashBtn button a {
+  font-size: 15px;
+}
+
