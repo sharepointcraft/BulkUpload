@@ -7,6 +7,7 @@ import "@pnp/sp/fields";
 import styles from "../../Components/BulkUpload/ExistingList.module.scss";
 import * as XLSX from "xlsx";
 
+
 const ExistingList: React.FC = () => {
   const [lists, setLists] = useState<any[]>([]);
   const [selectedList, setSelectedList] = useState<string>("");
@@ -15,7 +16,6 @@ const ExistingList: React.FC = () => {
   const [attachments, setAttachments] = useState<{ [index: number]: File | null }>({});
   const [showPopup, setShowPopup] = useState<boolean>(false);
 
-  // Fetch all lists on mount
   useEffect(() => {
     sp.web.lists
       .filter("BaseTemplate eq 100")
@@ -29,7 +29,6 @@ const ExistingList: React.FC = () => {
       });
   }, []);
 
-  // Fetch columns of the selected list
   useEffect(() => {
     if (selectedList) {
       sp.web.lists
@@ -63,7 +62,6 @@ const ExistingList: React.FC = () => {
         const worksheet = workbook.Sheets[firstSheetName];
         const jsonData = XLSX.utils.sheet_to_json<any>(worksheet, { header: 1 });
 
-        // Validate headers
         const headers = jsonData[0] as string[];
         const isValid = headers.every((header) => listColumns.includes(header));
 
@@ -112,6 +110,41 @@ const ExistingList: React.FC = () => {
 
   const closePopup = () => {
     setShowPopup(false);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedList || fileData.length === 0) {
+      console.error("No list selected or no file data available.");
+      alert("Please select a list and upload valid data before submitting.");
+      return;
+    }
+  
+    try {
+      for (const row of fileData) {
+        const itemId = row.ID; // Assuming the Excel file contains an 'ID' column
+        
+        if (itemId) {
+          try {
+            // Try updating the existing item by ID
+            console.log(`Updating item with ID: ${itemId}`);
+            await sp.web.lists.getById(selectedList).items.getById(itemId).update(row);
+          } catch (updateError) {
+            console.warn(`Item with ID ${itemId} not found. Adding new item.`);
+            // If the ID doesn't exist, add the item as new
+            await sp.web.lists.getById(selectedList).items.add(row);
+          }
+        } else {
+          // Add new item if no ID is present
+          console.log("Adding new item:", row);
+          await sp.web.lists.getById(selectedList).items.add(row);
+        }
+      }
+  
+      alert("Data submitted successfully!");
+    } catch (error) {
+      console.error("Error updating the list:", error);
+      alert("An error occurred while updating the list. Please try again.");
+    }
   };
 
   return (
@@ -198,6 +231,15 @@ const ExistingList: React.FC = () => {
             <button onClick={closePopup}>Close</button>
           </div>
         </div>
+      )}
+
+      {selectedList && fileData.length > 0 && (
+        <button
+          className={styles.submitButton}
+          onClick={handleSubmit}
+        >
+          Submit
+        </button>
       )}
     </div>
   );
