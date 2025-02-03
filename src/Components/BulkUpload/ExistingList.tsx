@@ -18,16 +18,22 @@ const ExistingList: React.FC = () => {
 
   useEffect(() => {
     sp.web.lists
-      .filter("BaseTemplate eq 100")
+      .getByTitle("BulkUpload_Central_List")
+      .items.select("List_Name")
       .get()
-      .then((listData) => {
-        const filteredLists = listData.map((list) => ({
-          id: list.Id,
-          title: list.Title,
+      .then((items) => {
+        const uniqueLists = items.map((item) => ({
+          id: item.List_Name, // Assuming List_Name is unique
+          title: item.List_Name,
         }));
-        setLists(filteredLists);
+  
+        setLists(uniqueLists);
+      })
+      .catch((error) => {
+        console.error("Error fetching lists:", error);
       });
   }, []);
+  
 
   useEffect(() => {
     if (selectedList) {
@@ -44,14 +50,23 @@ const ExistingList: React.FC = () => {
     }
   }, [selectedList]);
 
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
   const handleDropdownChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedList(event.target.value);
     setFileData([]);
     setAttachments({});
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
-
+  
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    
     const file = event.target.files?.[0];
+    setFileData([]);
     if (file) {
       const reader = new FileReader();
 
@@ -170,6 +185,7 @@ const ExistingList: React.FC = () => {
             type="file"
             accept=".xlsx, .csv"
             onChange={handleFileUpload}
+            ref={fileInputRef} // Add ref here
             className="file-input"
           />
         </div>
