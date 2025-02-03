@@ -1,3 +1,15 @@
+
+// VARIABLES
+// ------------------------------
+// Colors used throughout the design for consistency
+$primary-color: #ffc107; // Primary button color (yellow)
+$focus-color: #0078d4; // Focus state color for inputs (blue)
+$border-color: #ccc; // Standard border color (light gray)
+$light-background: #f9f9f9; // Background color for main container
+$gray-text: #6f6f6f; // Text color for information message
+$header-bg: #f2f2f2; // Background color for table headers
+
+
 /* Container styling */
 .dropdowncontainer {
     font-family: Arial, sans-serif;
@@ -11,7 +23,7 @@
   
   /* Header styling */
   .dropdownheader {
-    font-size: 18px;
+    font-size: 20px;
     color: #333;
     margin-bottom: 10px;
     text-align: center;
@@ -205,4 +217,39 @@
   
 .submitButton{
  border: 1px solid;
+}
+.existTitle{
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+
+
+.existTitle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+ 
+  // Styling for the button inside existTitle
+  button {
+    border-radius: 5px;
+    border: none;
+    padding: 5px;
+    background-color: $light-background;
+    cursor: pointer;
+    font-weight: 500;
+ 
+    // Styling for the anchor tag inside the button (if present)
+    a {
+      text-decoration: none; // Remove underline from links
+      color: black; // Set text color to black
+      font-weight: 500; // Set font weight to match the button
+    }
+  }
+}
+ 
+.existTitle img {
+  height: 40px;
+  width: 40px;
 }

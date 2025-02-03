@@ -6,6 +6,7 @@ import "@pnp/sp/webs";
 import "@pnp/sp/fields";
 import styles from "../../Components/BulkUpload/ExistingList.module.scss";
 import * as XLSX from "xlsx";
+import { Link } from "react-router-dom";
 
 
 const ExistingList: React.FC = () => {
@@ -49,6 +50,21 @@ const ExistingList: React.FC = () => {
       setListColumns([]);
     }
   }, [selectedList]);
+// const navigate = useNavigate(); // React Router hook for navigation
+
+  const resetForm = () => {
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    // Reset state variables
+    setSelectedList("");
+
+    // Navigate to the upload page
+    // navigate("/newlist");
+  };
+
 
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -164,7 +180,24 @@ const ExistingList: React.FC = () => {
 
   return (
     <div className={styles.dropdowncontainer}>
+      <div className={styles.existTitle}>
+      <button>
+        <Link to="/">
+          {" "}
+          <img
+            src={require("../../../src/webparts/bulkUpload/assets/HomeIcon.png")}
+            alt="Bulk-Upload-home-icon Image"
+          />
+        </Link>
+      </button>
       <h1 className={styles.dropdownheader}>Select a List</h1>
+      <button onClick={resetForm}>
+          <img
+            src={require("../../../src/webparts/bulkUpload/assets/circular.png")}
+            alt="Bulk-Upload-Reset-home-icon Image"
+          />
+        </button>
+        </div>
       <select
         className={styles.dropdownselect}
         value={selectedList}
@@ -257,6 +290,8 @@ const ExistingList: React.FC = () => {
           Submit
         </button>
       )}
+
+      
     </div>
   );
 };
